@@ -10,8 +10,10 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	const input = data.split('\n').map(d => +d);
 	let count = 0;
 	input.forEach((measure, index) => {
-		if (index > 0) {
-			if (measure > input[index - 1]) {
+		if (index > 0 && index < input.length - 2) {
+			const thisWindow = measure + input[index + 1] + input[index + 2];
+			const prevWindow = measure + input[index - 1] + input[index + 1];
+			if (thisWindow > prevWindow) {
 				count += 1;
 			}
 		}
