@@ -9,7 +9,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 
 	const input = data.split('\n').map(d => {
 		const [direction, amount] = d.split(' ');
-		return { direction, amount };
+		return { direction, amount: +amount };
 	});
 
 	let aim = 0;
@@ -18,14 +18,14 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	input.forEach(command => {
 		switch (command.direction) {
 			case 'forward':
-				position += +command.amount;
-				depth += aim * +command.amount;
+				position += command.amount;
+				depth += aim * command.amount;
 				break;
 			case 'up':
-				aim -= +command.amount;
+				aim -= command.amount;
 				break;
 			case 'down':
-				aim += +command.amount;
+				aim += command.amount;
 		}
 	});
 
