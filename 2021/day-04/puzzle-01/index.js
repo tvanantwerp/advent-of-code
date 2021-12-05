@@ -1,33 +1,40 @@
 const input = require('../input');
 
-const { draw, boards } = input;
+const { draws, boards } = input;
 let lastDraw;
 const boardsToEvaluate = [];
 let bingoBoard = null;
-
-for (let d = 0; d < draw.length; d++) {
+for (let d = 0; d < draws.length; d++) {
 	for (let i = 0; i < boards.length; i++) {
 		const board = boards[i].flat();
-		if (board.includes(draw[d]) && !boardsToEvaluate.includes(i)) {
+		if (board.includes(draws[d]) && !boardsToEvaluate.includes(i)) {
 			boardsToEvaluate.push(i);
 		}
-		lastDraw = draw[d];
+		lastDraw = d;
 	}
-	if (d >= 5) {
+	if (d >= 4) {
 		for (let b = 0; b < boardsToEvaluate.length; b++) {
 			const isBingo = checkForBingo(
 				boards[boardsToEvaluate[b]],
-				d === 0 ? draw[0] : draw.slice(0, d + 1),
+				draws.slice(0, d + 1),
 			);
 			if (isBingo) {
-				bingoBoard = b;
+				bingoBoard = boardsToEvaluate[b];
 				break;
 			}
 		}
 	}
 	if (bingoBoard) break;
 }
-console.log(lastDraw, bingoBoard);
+
+if (bingoBoard) {
+	let values = boards[bingoBoard].flat();
+	const drawsUsed = draws.slice(0, lastDraw + 1);
+	values = values.filter(v => !drawsUsed.includes(v));
+
+	const sum = values.reduce((prev, curr) => prev + curr, 0);
+	console.log(sum * draws[lastDraw]);
+}
 
 function checkForBingo(board, draws) {
 	const downwardBingo = checkDownwardDiagonal(board, draws);
