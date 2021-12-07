@@ -18,7 +18,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 		fuelToAverage += fuel;
 	});
 
-	console.log('using average (broken)', fuelToAverage);
+	console.log('using average', fuelToAverage);
 
 	const positions = new Map();
 	const min = Math.min(...input);
@@ -34,7 +34,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 		positions.set(position, totalFuel);
 	});
 	console.log(
-		'using brute force (correct)',
+		'using brute force',
 		Array.from(positions.values()).reduce((prev, curr) =>
 			curr < prev ? curr : prev,
 		),
@@ -42,7 +42,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 });
 
 function average(arr) {
-	return Math.round(arr.reduce((prev, curr) => prev + curr) / arr.length);
+	return Math.floor(arr.reduce((prev, curr) => prev + curr) / arr.length);
 }
 
 function triangularNumber(distance) {
