@@ -22,10 +22,9 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	let sumOfUniqueDigits = 0;
 	input.forEach(d => {
 		const [patterns, digits] = d;
-		const allPatterns = [...new Set(patterns.concat(digits))];
 		const easyPatterns = [
 			...new Set(
-				allPatterns.filter(
+				patterns.filter(
 					pattern =>
 						pattern.length === 2 ||
 						pattern.length === 3 ||
@@ -36,7 +35,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 		];
 		const hardPatterns = [
 			...new Set(
-				allPatterns.filter(
+				patterns.filter(
 					pattern =>
 						pattern.length !== 2 ||
 						pattern.length !== 3 ||
