@@ -1,43 +1,44 @@
 const fs = require('fs');
 const path = require('path');
 
-const test = [
-	[2, 1, 9, 9, 9, 4, 3, 2, 1, 0],
-	[3, 9, 8, 7, 8, 9, 4, 9, 2, 1],
-	[9, 8, 5, 6, 7, 8, 9, 8, 9, 2],
-	[8, 7, 6, 7, 8, 9, 6, 7, 8, 9],
-	[9, 8, 9, 9, 9, 6, 5, 6, 7, 8],
-];
+// const test = [
+// 	[2, 1, 9, 9, 9, 4, 3, 2, 1, 0],
+// 	[3, 9, 8, 7, 8, 9, 4, 9, 2, 1],
+// 	[9, 8, 5, 6, 7, 8, 9, 8, 9, 2],
+// 	[8, 7, 6, 7, 8, 9, 6, 7, 8, 9],
+// 	[9, 8, 9, 9, 9, 6, 5, 6, 7, 8],
+// ];
 
-const testLowPoints = [];
-const testBasins = [];
+// const testLowPoints = [];
+// const testBasins = [];
 
-for (let row = 0; row < test.length; row++) {
-	for (let column = 0; column < test[row].length; column++) {
-		if (isLowPoint(test, row, column)) testLowPoints.push(`r${row}c${column}`);
-	}
-}
+// for (let row = 0; row < test.length; row++) {
+// 	for (let column = 0; column < test[row].length; column++) {
+// 		if (isLowPoint(test, row, column)) testLowPoints.push(`r${row}c${column}`);
+// 	}
+// }
 
-testLowPoints.forEach(point => {
-	const queue = [point];
-	const traversed = [];
-	while (queue.length > 0) {
-		const point = queue.pop();
-		const adjacent = getAdjacentPoints(test, point).filter(
-			point => !queue.includes(point) && !traversed.includes(point),
-		);
-		queue.push(...adjacent);
-		traversed.push(point);
-	}
-	testBasins.push(traversed.length);
-});
+// testLowPoints.forEach(point => {
+// 	const queue = [point];
+// 	const traversed = [];
+// 	while (queue.length > 0) {
+// 		const point = queue.pop();
+// 		const adjacent = getAdjacentPoints(test, point).filter(
+// 			point => !queue.includes(point) && !traversed.includes(point),
+// 		);
+// 		console.log(queue, point, adjacent, traversed);
+// 		queue.push(...adjacent);
+// 		traversed.push(point);
+// 	}
+// 	testBasins.push(traversed.length);
+// });
 
-const testTopThree = testBasins.sort((a, b) => b - a).slice(0, 3);
-console.log(
-	testBasins,
-	testTopThree,
-	testTopThree.reduce((prev, curr) => prev * curr),
-);
+// const testTopThree = testBasins.sort((a, b) => b - a).slice(0, 3);
+// console.log(
+// 	testBasins,
+// 	testTopThree,
+// 	testTopThree.reduce((prev, curr) => prev * curr),
+// );
 
 fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	if (err) {
@@ -77,32 +78,31 @@ function getAdjacentPoints(grid, point) {
 	const adjacentPoints = [];
 	const [row, column] = pointTextToCoordinates(point);
 	const value = grid[row][column];
-	if (
-		grid[row - 1] !== undefined &&
-		grid[row - 1][column] > value &&
-		grid[row - 1][column] < 9
-	) {
+
+	let up, down, left, right;
+	if (grid[row - 1] !== undefined) {
+		up = grid[row - 1][column];
+	}
+	if (grid[row + 1] !== undefined) {
+		down = grid[row + 1][column];
+	}
+	if (grid[row][column - 1] !== undefined) {
+		left = grid[row][column - 1];
+	}
+	if (grid[row][column + 1] !== undefined) {
+		right = grid[row][column + 1];
+	}
+
+	if (up !== undefined && up > value && up < 9) {
 		adjacentPoints.push(coordinatesToText([row - 1, column]));
 	}
-	if (
-		grid[row + 1] !== undefined &&
-		grid[row + 1][column] > value &&
-		grid[row + 1][column] < 9
-	) {
+	if (down !== undefined && down > value && down < 9) {
 		adjacentPoints.push(coordinatesToText([row + 1, column]));
 	}
-	if (
-		grid[row][column - 1] !== undefined &&
-		grid[row][column - 1] > value &&
-		grid[row][column - 1] < 9
-	) {
+	if (left !== undefined && left > value && left < 9) {
 		adjacentPoints.push(coordinatesToText([row, column - 1]));
 	}
-	if (
-		grid[row][column + 1] !== undefined &&
-		grid[row][column + 1] > value &&
-		grid[row][column + 1] < 9
-	) {
+	if (right !== undefined && right > value && right < 9) {
 		adjacentPoints.push(coordinatesToText([row, column + 1]));
 	}
 	return adjacentPoints;
@@ -115,7 +115,7 @@ function coordinatesToText(coordinates) {
 function pointTextToCoordinates(point) {
 	const pattern = /r(\d+)c(\d+)/;
 	const match = point.match(pattern);
-	return [match[1], match[2]];
+	return [+match[1], +match[2]];
 }
 
 function isLowPoint(grid, row, column) {
