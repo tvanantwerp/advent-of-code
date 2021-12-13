@@ -24,11 +24,28 @@ fs.readFile(path.join(__dirname, '../testInput.txt'), 'utf8', (err, data) => {
 		grid[coordinate[1]][coordinate[0]] = '█';
 	});
 
+	let foldingGrid = [...grid];
+	folds.forEach(fold => {
+		foldingGrid =
+			fold[0] === 'x'
+				? foldX(foldingGrid, fold[1])
+				: foldY(foldingGrid, fold[1]);
+	});
+
 	console.log(renderGrid(grid));
-	console.log(renderGrid(foldY(grid, 7)));
+	console.log(renderGrid(foldingGrid));
 });
 
-function foldX(grid, axis) {}
+function foldX(grid, axis) {
+	const leftHalf = grid.map(d => d.slice(0, axis));
+	const rightHalf = grid.map(d => d.slice(axis + 1).reverse());
+	const foldedGrid = leftHalf.map((row, rI) => {
+		return row.map((column, cI) => {
+			return column === '█' || rightHalf[rI][cI] === '█' ? '█' : '░';
+		});
+	});
+	return foldedGrid;
+}
 
 function foldY(grid, axis) {
 	const topHalf = grid.slice(0, axis);
