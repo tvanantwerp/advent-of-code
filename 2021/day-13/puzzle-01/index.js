@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-fs.readFile(path.join(__dirname, '../testInput.txt'), 'utf8', (err, data) => {
+fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	if (err) {
 		console.error(err);
 		return;
@@ -25,36 +25,69 @@ fs.readFile(path.join(__dirname, '../testInput.txt'), 'utf8', (err, data) => {
 	});
 
 	let foldingGrid = [...grid];
-	folds.forEach(fold => {
+	let firstVisibleDots = 0;
+	folds.forEach((fold, i) => {
 		foldingGrid =
 			fold[0] === 'x'
 				? foldX(foldingGrid, fold[1])
 				: foldY(foldingGrid, fold[1]);
+		if (i === 0) {
+			firstVisibleDots = foldingGrid.flat().filter(d => d === '█').length;
+		}
 	});
 
 	console.log(renderGrid(grid));
 	console.log(renderGrid(foldingGrid));
+	console.log(firstVisibleDots);
 });
 
 function foldX(grid, axis) {
 	const leftHalf = grid.map(d => d.slice(0, axis));
 	const rightHalf = grid.map(d => d.slice(axis + 1).reverse());
-	const foldedGrid = leftHalf.map((row, rI) => {
-		return row.map((column, cI) => {
-			return column === '█' || rightHalf[rI][cI] === '█' ? '█' : '░';
-		});
-	});
+	const foldedGrid = Array.from({ length: grid.length }, () =>
+		Array.from(
+			{ length: Math.max(leftHalf.length, rightHalf.length) },
+			() => '░',
+		),
+	);
+	for (let row = 0; row < foldedGrid.length; row++) {
+		for (let column = 0; column < foldedGrid[row].length; column++) {
+			if (
+				leftHalf[row] &&
+				leftHalf[row][column] &&
+				leftHalf[row][column] === '█'
+			) {
+				foldedGrid[row][column] = '█';
+			}
+			if (
+				rightHalf[row] &&
+				rightHalf[row][column] &&
+				rightHalf[row][column] === '█'
+			) {
+				foldedGrid[row][column] = '█';
+			}
+		}
+	}
 	return foldedGrid;
 }
 
 function foldY(grid, axis) {
 	const topHalf = grid.slice(0, axis);
 	const bottomHalf = grid.slice(axis + 1).reverse();
-	const foldedGrid = topHalf.map((row, rI) => {
-		return row.map((column, cI) => {
-			return column === '█' || bottomHalf[rI][cI] === '█' ? '█' : '░';
-		});
-	});
+	const foldedGrid = Array.from(
+		{ length: Math.max(topHalf.length, bottomHalf.length) },
+		() => Array.from({ length: grid[0].length }, () => '░'),
+	);
+	for (let row = 0; row < foldedGrid.length; row++) {
+		for (let column = 0; column < foldedGrid[row].length; column++) {
+			if (topHalf[row] && topHalf[row][column] === '█') {
+				foldedGrid[row][column] = '█';
+			}
+			if (bottomHalf[row] && bottomHalf[row][column] === '█') {
+				foldedGrid[row][column] = '█';
+			}
+		}
+	}
 	return foldedGrid;
 }
 
