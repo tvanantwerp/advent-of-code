@@ -25,20 +25,14 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 	});
 
 	let foldingGrid = [...grid];
-	let firstVisibleDots = 0;
-	folds.forEach((fold, i) => {
+	folds.forEach(fold => {
 		foldingGrid =
 			fold[0] === 'x'
 				? foldX(foldingGrid, fold[1])
 				: foldY(foldingGrid, fold[1]);
-		if (i === 0) {
-			firstVisibleDots = foldingGrid.flat().filter(d => d === '█').length;
-		}
 	});
 
-	console.log(renderGrid(grid));
 	console.log(renderGrid(foldingGrid));
-	console.log(firstVisibleDots);
 });
 
 function foldX(grid, axis) {
