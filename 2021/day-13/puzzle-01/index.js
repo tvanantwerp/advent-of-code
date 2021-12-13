@@ -23,18 +23,22 @@ fs.readFile(path.join(__dirname, '../testInput.txt'), 'utf8', (err, data) => {
 	coordinates.forEach(coordinate => {
 		grid[coordinate[1]][coordinate[0]] = '█';
 	});
+
+	console.log(renderGrid(grid));
+	console.log(renderGrid(foldY(grid, 7)));
 });
 
-function flipX(grid, axis) {}
+function foldX(grid, axis) {}
 
-function flipY(grid, axis) {
+function foldY(grid, axis) {
 	const topHalf = grid.slice(0, axis);
 	const bottomHalf = grid.slice(axis + 1).reverse();
-	const foldedGrid = topHalf.map(row => {
-		return row.map((column, i) => {
-			return;
+	const foldedGrid = topHalf.map((row, rI) => {
+		return row.map((column, cI) => {
+			return column === '█' || bottomHalf[rI][cI] === '█' ? '█' : '░';
 		});
 	});
+	return foldedGrid;
 }
 
 function renderGrid(grid) {
