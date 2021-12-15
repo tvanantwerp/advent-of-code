@@ -38,6 +38,7 @@ fs.readFile(path.join(__dirname, '../input.txt'), 'utf8', (err, data) => {
 
 	let max = 0;
 	let min = Infinity;
+	console.log(countOfLetters);
 	countOfLetters.forEach(value => {
 		if (value > max) max = value;
 		if (value < min) min = value;
