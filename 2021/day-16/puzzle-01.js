@@ -26,9 +26,10 @@ fs.readFile(path.join(__dirname, './testInput1.txt'), 'utf8', (err, data) => {
 		return;
 	}
 
-	const input = hexToBinary(data);
+	const input = hexToBinary('D2FE28');
+	// const input = hexToBinary(data);
 
-	console.log(input);
+	console.log(parsePacket(input));
 });
 
 function hexToBinary(hex) {
@@ -36,4 +37,31 @@ function hexToBinary(hex) {
 		.split('')
 		.map(hexDigit => hexMap[hexDigit])
 		.join('');
+}
+
+function binaryToDecimal(binary) {
+	const binaryArray = binary.split('').reverse();
+	return binaryArray.reduce((prev, curr, i) => {
+		return prev + curr * 2 ** i;
+	}, 0);
+}
+
+function parsePacket(binary) {
+	const version = binaryToDecimal(binary.slice(0, 3));
+	const type = binaryToDecimal(binary.slice(3, 6));
+	if (type === 4) return parseNumberPacket(binary.slice(6));
+}
+
+function parseNumberPacket(binary) {
+	const binaryArray = binary.split('');
+	console.log(binary);
+	let lastSequence = false;
+	let binaryNumber = '';
+	do {
+		const sequence = binaryArray.splice(0, 5);
+		const sequenceType = sequence.splice(0, 1);
+		if (sequenceType[0] === '0') lastSequence = true;
+		binaryNumber += sequence.join('');
+	} while (!lastSequence);
+	return binaryToDecimal(binaryNumber);
 }
