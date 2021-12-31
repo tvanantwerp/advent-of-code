@@ -1,16 +1,17 @@
 {
-  "name": "advent-of-code",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "eslint": "^8.3.0",
-    "eslint-config-prettier": "^8.3.0",
-    "prettier": "^2.5.0"
-  }
+	"name": "advent-of-code",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"plop": "plop"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"eslint": "^8.3.0",
+		"eslint-config-prettier": "^8.3.0",
+		"plop": "^3.0.5",
+		"prettier": "^2.5.0"
+	}
 }
