@@ -1,8 +1,24 @@
 const input = await Deno.readTextFile("./input.txt");
 const test = await Deno.readTextFile("./test.txt");
 
-const parseInput = (input: string) =>
-	input.trim().split(/\n/).map((round) => round.split(" "));
+const isOpponentMove = (move: string): move is OpponentMoves => {
+	return move === "A" || move === "B" || move === "C";
+};
+
+const isPlayerMove = (move: string): move is PlayerMoves => {
+	return move === "X" || move === "Y" || move === "Z";
+};
+
+const parseInput = (input: string) => {
+	const moves = input.trim().split(/\n/).map((round) => {
+		const positions = round.split(" ");
+		if (!isOpponentMove(positions[0]) || !isPlayerMove(positions[1])) {
+			throw new Error(`Invalid input: ${JSON.stringify(positions)}`);
+		}
+		return positions;
+	});
+	return moves;
+};
 
 type OpponentMoves = "A" | "B" | "C";
 type PlayerMoves = "X" | "Y" | "Z";
