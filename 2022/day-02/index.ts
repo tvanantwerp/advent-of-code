@@ -1,11 +1,14 @@
 const input = await Deno.readTextFile("./input.txt");
 const test = await Deno.readTextFile("./test.txt");
 
+type OpponentMoves = "A" | "B" | "C";
+type PlayerActions = "X" | "Y" | "Z";
+
 const isOpponentMove = (move: string): move is OpponentMoves => {
 	return move === "A" || move === "B" || move === "C";
 };
 
-const isPlayerMove = (move: string): move is PlayerMoves => {
+const isPlayerMove = (move: string): move is PlayerActions => {
 	return move === "X" || move === "Y" || move === "Z";
 };
 
@@ -20,53 +23,37 @@ const parseInput = (input: string) => {
 	return moves;
 };
 
-type OpponentMoves = "A" | "B" | "C";
-type PlayerMoves = "X" | "Y" | "Z";
-
-const getScore = (opponent: OpponentMoves, player: PlayerMoves) => {
+const getScore = (opponent: OpponentMoves, player: PlayerActions) => {
 	const playerScores = { X: 1, Y: 2, Z: 3 } as const;
 	const victoryBonus = 6;
 	const drawBonus = 3;
+	const loseBonus = 0;
+	const againstA = {X: drawBonus, Y: victoryBonus, Z: loseBonus} as const;
+	const againstB = {X: loseBonus, Y: drawBonus, Z: victoryBonus} as const;
+	const againstC = {X: victoryBonus, Y: loseBonus, Z: drawBonus} as const;
 	let playerScore = playerScores[player];
-	if (opponent === "A") {
-		if (player === "Y") playerScore += victoryBonus;
-		if (player === "X") playerScore += drawBonus;
-	}
-	if (opponent === "B") {
-		if (player === "Z") playerScore += victoryBonus;
-		if (player === "Y") playerScore += drawBonus;
-	}
-	if (opponent === "C") {
-		if (player === "X") playerScore += victoryBonus;
-		if (player === "Z") playerScore += drawBonus;
-	}
+	if (opponent === "A") playerScore += againstA[player];
+	if (opponent === "B") playerScore += againstB[player];
+	if (opponent === "C") playerScore += againstC[player];
 
 	return playerScore;
 };
 
-const getPlayerMove = (opponent: OpponentMoves, outcome: PlayerMoves) => {
-	if (outcome === "X") {
-		if (opponent === "A") return "Z";
-		if (opponent === "B") return "X";
-		if (opponent === "C") return "Y";
-	}
-	if (outcome === "Y") {
-		if (opponent === "A") return "X";
-		if (opponent === "B") return "Y";
-		if (opponent === "C") return "Z";
-	}
-	if (outcome === "Z") {
-		if (opponent === "A") return "Y";
-		if (opponent === "B") return "Z";
-		if (opponent === "C") return "X";
-	}
+const getPlayerMove = (opponent: OpponentMoves, outcome: PlayerActions): PlayerActions => {
+	const winMap = {A: 'Y', B: 'Z', C: 'X'} as const;
+	const drawMap = {A: 'X', B: 'Y', C: 'Z'} as const;
+	const loseMap = {A: 'Z', B: 'X', C: 'Y'} as const;
+	if (outcome === "X") return loseMap[opponent];
+	else if (outcome === "Y") return drawMap[opponent];
+	else if (outcome === "Z") return winMap[opponent];
+	else throw new Error('Opponent move is invalid');
 };
 
 const part1 = (input: string) => {
 	const moves = parseInput(input);
 	const totalScore = moves.reduce(
 		(acc, curr) => {
-			return acc + getScore(curr[0] as OpponentMoves, curr[1] as PlayerMoves);
+			return acc + getScore(curr[0] as OpponentMoves, curr[1] as PlayerActions);
 		},
 		0,
 	);
@@ -82,8 +69,8 @@ const part2 = (input: string) => {
 					curr[0] as OpponentMoves,
 					getPlayerMove(
 						curr[0] as OpponentMoves,
-						curr[1] as PlayerMoves,
-					) as PlayerMoves,
+						curr[1] as PlayerActions,
+					) as PlayerActions,
 				);
 		},
 		0,
