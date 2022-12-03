@@ -69,32 +69,16 @@ const part2 = (input: string) => {
 	return priorities;
 };
 
-console.assert(16 === part1('vJrwpWtwJgWrhcsFMMfFFhFp'), {
-	expected: 16,
-	received: part1('vJrwpWtwJgWrhcsFMMfFFhFp'),
+const test1 = part1(test);
+console.assert(157 === test1, {
+	expected: 157,
+	received: test,
 });
-console.assert(38 === part1('jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL'), {
-	expected: 38,
-	received: part1('jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL'),
+const test2 = part2(test);
+console.assert(70 === test2, {
+	expected: 70,
+	received: test2,
 });
-console.assert(42 === part1('PmmdzqPrVvPwwTWBwg'), {
-	expected: 42,
-	received: part1('PmmdzqPrVvPwwTWBwg'),
-});
-console.assert(22 === part1('wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn'), {
-	expected: 22,
-	received: part1('wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn'),
-});
-console.assert(20 === part1('ttgJtRGJQctTZtZT'), {
-	expected: 20,
-	received: part1('ttgJtRGJQctTZtZT'),
-});
-console.assert(19 === part1('CrZsJsPPZsGzwwsLwLmpwMDw'), {
-	expected: 19,
-	received: part1('CrZsJsPPZsGzwwsLwLmpwMDw'),
-});
-console.assert(157 === part1(test), { expected: 157, received: part1(test) });
-console.assert(70 === part2(test), { expected: 70, received: part2(test) });
 
 console.log(`Part 1 answer: ${part1(input)}`);
 console.log(`Part 2 answer: ${part2(input)}`);
