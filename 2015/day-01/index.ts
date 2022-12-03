@@ -46,12 +46,6 @@ console.log(`Input ()) should be -1, is ${part1('())')}`);
 console.log(`Input ))( should be -1, is ${part1('))(')}`);
 console.log(`Input ))) should be -3, is ${part1(')))')}`);
 console.log(`Input )())()) should be -3, is ${part1(')())())')}`);
-
-await Deno.writeTextFile(
-	`${__dirname}output1.txt`,
-	JSON.stringify(part1(input)),
-);
-await Deno.writeTextFile(
-	`${__dirname}output2.txt`,
-	JSON.stringify(part2(input)),
-);
+console.log('---');
+console.log(part1(input));
+console.log(part2(input));
