@@ -14,7 +14,7 @@ const part1 = (input: string) => {
 		if (strings[i].match(/ab|cd|pq|xy/)) continue;
 		if (
 			strings[i].match(/(.)\1+/) &&
-			(strings[i].match(/[aeiou]/g)?.length ?? 0) >= 3
+			strings[i].match(/(.*[aeiou]){3}/)
 		) niceStrings++;
 	}
 	return niceStrings;
