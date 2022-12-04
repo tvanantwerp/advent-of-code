@@ -49,7 +49,17 @@ function binaryToDecimal(binary) {
 function parsePacket(binary) {
 	const version = binaryToDecimal(binary.slice(0, 3));
 	const type = binaryToDecimal(binary.slice(3, 6));
-	if (type === 4) return parseNumberPacket(binary.slice(6));
+	if (type === 4) {
+		// return parseNumberPacket(binary.slice(6));
+		return version;
+	} else {
+		const lengthId = binary.slice(6, 7);
+		if (lengthId === '0') {
+			const packetLength = binaryToDecimal(binary.slice(7, 22));
+		} else {
+			const packetCount = binaryToDecimal(binary.slice(7, 18));
+		}
+	}
 }
 
 function parseNumberPacket(binary) {
