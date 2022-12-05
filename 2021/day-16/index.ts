@@ -51,11 +51,27 @@ function binaryToDecimal(binary: string) {
 	return parseInt(binary, 2);
 }
 
-function decode(input: string): number {
-	return 0;
+function parseId4(binary: string) {
+	return { version: 0, value: 0 };
 }
 
-console.assert(decode('8A004A801A8002F478') === 16);
-console.assert(decode('620080001611562C8802118E34') === 12);
-console.assert(decode('C0015000016115A2E0802F182340') === 23);
-console.assert(decode('A0016C880162017C3686B18A3D4780') === 31);
+const parseMap = {
+	4: parseId4,
+} as const;
+
+type ParserId = keyof typeof parseMap;
+
+function part1(input: string): number {
+	let version = binaryToDecimal(input.slice(0, 3));
+	let id = binaryToDecimal(input.slice(3, 6));
+	let nextInput = input.slice(6);
+	while (nextInput.length > 0) {
+		version += part1(nextInput);
+	}
+	return version;
+}
+
+console.assert(part1('8A004A801A8002F478') === 16);
+console.assert(part1('620080001611562C8802118E34') === 12);
+console.assert(part1('C0015000016115A2E0802F182340') === 23);
+console.assert(part1('A0016C880162017C3686B18A3D4780') === 31);
