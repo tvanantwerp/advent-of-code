@@ -2,6 +2,8 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
+type Stacks = Record<string, string[]>;
+
 const parseInput = (input: string) => {
 	const [initialState, initialActions] = input.split('\n\n');
 	const initialStateRows = initialState.split('\n');
@@ -12,7 +14,7 @@ const parseInput = (input: string) => {
 	const stackCount = parseInt(
 		stackCountMatch[1],
 	);
-	const stacks: Record<string, string[]> = {};
+	const stacks: Stacks = {};
 	for (let i = 1; i < stackCount + 1; i++) {
 		stacks[i] = [];
 	}
@@ -38,7 +40,13 @@ const parseInput = (input: string) => {
 	return { stacks, actions };
 };
 
-parseInput(test);
+function getTopCrates(stacks: Stacks): string {
+	let topCrates = '';
+	Object.keys(stacks).forEach((key) => {
+		topCrates += stacks[key].at(-1);
+	});
+	return topCrates;
+}
 
 const part1 = (input: string) => {
 	const { stacks, actions } = parseInput(input);
@@ -48,11 +56,7 @@ const part1 = (input: string) => {
 		stacks[action.source] = crates.reverse();
 		stacks[action.destination].push(...movedCrates);
 	}
-	let topCrates = '';
-	Object.keys(stacks).forEach((key) => {
-		topCrates += stacks[key].at(-1);
-	});
-	return topCrates;
+	return getTopCrates(stacks);
 };
 
 const part2 = (input: string) => {
@@ -63,11 +67,7 @@ const part2 = (input: string) => {
 		stacks[action.source] = crates.reverse();
 		stacks[action.destination].push(...movedCrates);
 	}
-	let topCrates = '';
-	Object.keys(stacks).forEach((key) => {
-		topCrates += stacks[key].at(-1);
-	});
-	return topCrates;
+	return getTopCrates(stacks);
 };
 
 const test1 = part1(test);
