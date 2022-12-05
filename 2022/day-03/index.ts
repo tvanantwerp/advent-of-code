@@ -26,6 +26,11 @@ const part1 = (input: string) => {
 	const rucksacks = parseInput(input);
 	let priorities = 0;
 	for (const rucksack of rucksacks) {
+		if (rucksack.length % 2 !== 0) {
+			throw new Error(
+				`Invalid rucksack input ${rucksack}, has unevenly sized compartments.`,
+			);
+		}
 		const compartment1 = rucksack.slice(0, rucksack.length / 2).split('');
 		const compartment2 = rucksack.slice(rucksack.length / 2).split('');
 		const sharedItem = compareSets(
