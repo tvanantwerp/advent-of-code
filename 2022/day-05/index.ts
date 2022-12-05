@@ -12,7 +12,6 @@ const parseInput = (input: string) => {
 	const stackCount = parseInt(
 		stackCountMatch[1],
 	);
-	console.table({ stackCount, stackHeight });
 	const stacks: Record<string, string[]> = {};
 	for (let i = 1; i < stackCount + 1; i++) {
 		stacks[i] = [];
@@ -20,11 +19,12 @@ const parseInput = (input: string) => {
 	const cratePattern = /\[(\w)\]\s?/g;
 	let matches: RegExpExecArray | null;
 	for (let i = 0; i < stackHeight; i++) {
-		console.log(initialStateRows[i]);
 		while (matches = cratePattern.exec(initialStateRows[i])) {
 			stacks[1 + matches.index / 4].push(matches[1]);
 		}
 	}
+
+	Object.keys(stacks).forEach((key) => stacks[key] = stacks[key].reverse());
 
 	const actions = initialActions.split('\n').map((action) => {
 		const digits = action.match(/move (\d+) from (\d+) to (\d+)/)!;
@@ -43,7 +43,9 @@ parseInput(test);
 const part1 = (input: string) => {
 	const { stacks, actions } = parseInput(input);
 	for (const action of actions) {
-		const movedCrates = stacks[action.source].splice(0, action.count);
+		const crates = stacks[action.source].reverse();
+		const movedCrates = crates.splice(0, action.count);
+		stacks[action.source] = crates.reverse();
 		stacks[action.destination].push(...movedCrates);
 	}
 	let topCrates = '';
@@ -53,19 +55,31 @@ const part1 = (input: string) => {
 	return topCrates;
 };
 
-// const part2 = (input: string) => {
-// };
+const part2 = (input: string) => {
+	const { stacks, actions } = parseInput(input);
+	for (const action of actions) {
+		const crates = stacks[action.source].reverse();
+		const movedCrates = crates.splice(0, action.count).reverse();
+		stacks[action.source] = crates.reverse();
+		stacks[action.destination].push(...movedCrates);
+	}
+	let topCrates = '';
+	Object.keys(stacks).forEach((key) => {
+		topCrates += stacks[key].at(-1);
+	});
+	return topCrates;
+};
 
 const test1 = part1(test);
 console.assert('CMZ' === test1, {
 	expected: 'CMZ',
 	received: test1,
 });
-// const test2 = part2(test);
-// console.assert(4 === test2, {
-// 	expected: 4,
-// 	received: test2,
-// });
+const test2 = part2(test);
+console.assert('MCD' === test2, {
+	expected: 'MCD',
+	received: test2,
+});
 
-// console.log(`Part 1 answer: ${part1(input)}`);
-// console.log(`Part 2 answer: ${part2(input)}`);
+console.log(`Part 1 answer: ${part1(input)}`);
+console.log(`Part 2 answer: ${part2(input)}`);
