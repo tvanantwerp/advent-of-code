@@ -2,37 +2,33 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
-type Stacks = Record<string, string[]>;
+type Stacks = string[][];
 
 const parseInput = (input: string) => {
 	const [initialState, initialActions] = input.split('\n\n');
 	const initialStateRows = initialState.split('\n');
 	const stackHeight = initialStateRows.length - 1;
-	const stackCountMatch = initialStateRows[initialStateRows.length - 1].match(
-		/.*(\d)\s?$/,
-	)!;
 	const stackCount = parseInt(
-		stackCountMatch[1],
+		initialStateRows[initialStateRows.length - 1].match(
+			/.*(\d)\s?$/,
+		)![1],
 	);
-	const stacks: Stacks = {};
-	for (let i = 1; i < stackCount + 1; i++) {
-		stacks[i] = [];
-	}
+	const stacks = Array.from({ length: stackCount }, (): string[] => []);
 	const cratePattern = /\[(\w)\]\s?/g;
 	let matches: RegExpExecArray | null;
 	for (let i = 0; i < stackHeight; i++) {
 		while (matches = cratePattern.exec(initialStateRows[i])) {
-			stacks[1 + matches.index / 4].push(matches[1]);
+			stacks[matches.index / 4].push(matches[1]);
 		}
 	}
 
-	Object.keys(stacks).forEach((key) => stacks[key] = stacks[key].reverse());
+	stacks.forEach((stack, i) => stacks[i] = stack.reverse());
 
 	const actions = initialActions.split('\n').map((action) => {
 		const digits = action.match(/move (\d+) from (\d+) to (\d+)/)!;
 		return {
-			source: digits[2]!,
-			destination: digits[3]!,
+			source: +digits[2]! - 1,
+			destination: +digits[3]! - 1,
 			count: +digits[1]!,
 		};
 	});
@@ -41,11 +37,7 @@ const parseInput = (input: string) => {
 };
 
 function getTopCrates(stacks: Stacks): string {
-	let topCrates = '';
-	Object.keys(stacks).forEach((key) => {
-		topCrates += stacks[key].at(-1);
-	});
-	return topCrates;
+	return stacks.map((stack) => stack[stack.length - 1]).join('');
 }
 
 const part1 = (input: string) => {
