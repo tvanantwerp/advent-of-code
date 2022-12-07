@@ -20,14 +20,15 @@ function listOfFilesAndSizes(terminal: string[]) {
 	for (const line of terminal) {
 		const info = line.match(cliPattern);
 		if (info) {
-			if (info[1]) pwd = cd(pwd, info[1]);
-			if (info[2] && info[3]) {
+			const [, dir, size] = info;
+			if (dir) pwd = cd(pwd, dir);
+			if (size) {
 				const dirs = pwd.split('/');
 				for (let i = 0; i < dirs.length; i++) {
 					const path = dirs.slice(0, i + 1).join('/');
 					fileSystem[path]
-						? fileSystem[path] += +info[2]
-						: fileSystem[path] = +info[2];
+						? fileSystem[path] += +size
+						: fileSystem[path] = +size;
 				}
 			}
 		}
