@@ -1,24 +1,24 @@
 const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
-// const input = await Deno.readTextFile(`${__dirname}input.txt`);
+const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
 type ResultType = 'VALUE';
 type NegationType = 'NOT';
 type ComputationType = 'AND' | 'OR' | 'LSHIFT' | 'RSHIFT';
 
-type Instruction = { target: string; type: NegationType; inputs: [string] } | {
+type Instruction = { target: string; type: NegationType; inputs: string } | {
 	target: string;
 	type: ComputationType;
 	inputs: [string, string];
-} | { target: string; type: ResultType; inputs: [number] };
+} | { target: string; type: ResultType; inputs: number };
 
 function parseOperation(operation: string, target: string): Instruction {
 	const instructions = operation.split(' ');
 	switch (instructions.length) {
 		case 1:
-			return { target, type: 'VALUE', inputs: [+instructions[0]] };
+			return { target, type: 'VALUE', inputs: +instructions[0] };
 		case 2:
-			return { target, type: 'NOT', inputs: [instructions[1]] };
+			return { target, type: 'NOT', inputs: instructions[1] };
 		case 3:
 			return {
 				target,
@@ -40,17 +40,57 @@ const parseInput = (input: string): Instruction[] => {
 const part1 = (input: string, wire: string) => {
 	const instructions = parseInput(input);
 	const results: Map<string, number> = new Map();
-	const operations: Map<string, Omit<Instruction, 'target'>> = new Map();
-
-	for (const { type, inputs, target } of instructions) {
-		if (type === 'VALUE') {
-			results.set(target, inputs[0]);
-		} else {
-			operations.set(target, { type, inputs });
-		}
+	const operations: Map<string, Instruction> = new Map();
+	for (const instruction of instructions) {
+		operations.set(instruction.target, instruction);
 	}
 
-	return 0;
+	function findOperation(target: string): number {
+		if (isNaN(+target)) return compute(operations.get(target)!);
+		return +target;
+	}
+
+	function compute({ type, inputs, target }: Instruction): number {
+		console.log(
+			`Looking for ${target} with inputs ${inputs}. ${type} calculation.`,
+		);
+		if (results.has(target)) {
+			return results.get(target)!;
+		} else if (type === 'VALUE') {
+			results.set(target, inputs);
+			return inputs;
+		} else if (type === 'NOT') {
+			const result = ~compute(operations.get(inputs)!) & 0xffff;
+			results.set(target, result);
+			return result;
+		} else if (type === 'AND') {
+			const result = findOperation(inputs[0])! &
+				findOperation(inputs[1])!;
+			results.set(target, result);
+			return result;
+		} else if (type === 'OR') {
+			const result = findOperation(inputs[0])! |
+				findOperation(inputs[1])!;
+			results.set(target, result);
+			return result;
+		} else if (type === 'LSHIFT') {
+			const result = findOperation(inputs[0])! <<
+				findOperation(inputs[1])!;
+			results.set(target, result);
+			return result;
+		} else if (type === 'RSHIFT') {
+			const result = findOperation(inputs[0])! >>
+				findOperation(inputs[1])!;
+			results.set(target, result);
+			return result;
+		} else {
+			throw new Error(
+				`Invalid instruction: ${{ target, type, inputs }}`,
+			);
+		}
+	}
+	console.log(operations.get(wire));
+	return compute(operations.get(wire)!);
 };
 
 // const part2 = (input: string) => {
@@ -97,5 +137,5 @@ console.assert(456 === test8, {
 	received: test8,
 });
 
-// console.log(`Part 1 answer: ${part1(input)}`);
+console.log(`Part 1 answer: ${part1(input, 'lx')}`);
 // console.log(`Part 2 answer: ${part2(input)}`);
