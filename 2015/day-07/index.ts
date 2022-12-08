@@ -2,16 +2,54 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 // const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
-const parseInput = (input: string) => {
-	return input.trim().split('\n');
+type ResultType = 'VALUE';
+type NegationType = 'NOT';
+type ComputationType = 'AND' | 'OR' | 'LSHIFT' | 'RSHIFT';
+
+type Instruction = { target: string; type: NegationType; inputs: [string] } | {
+	target: string;
+	type: ComputationType;
+	inputs: [string, string];
+} | { target: string; type: ResultType; inputs: [number] };
+
+function parseOperation(operation: string, target: string): Instruction {
+	const instructions = operation.split(' ');
+	switch (instructions.length) {
+		case 1:
+			return { target, type: 'VALUE', inputs: [+instructions[0]] };
+		case 2:
+			return { target, type: 'NOT', inputs: [instructions[1]] };
+		case 3:
+			return {
+				target,
+				type: instructions[1] as ComputationType,
+				inputs: [instructions[0], instructions[2]],
+			};
+		default:
+			throw new Error(`Invalid operation: ${instructions}.`);
+	}
+}
+
+const parseInput = (input: string): Instruction[] => {
+	return input.trim().split('\n').map((line) => {
+		const [operation, target] = line.split(' -> ');
+		return parseOperation(operation, target);
+	});
 };
 
 const part1 = (input: string, wire: string) => {
-	const instructions = parseInput(input).map((instruction) => {
-		const [ops, target] = instruction.split(' -> ');
-		return [ops.split(' '), target];
-	}).sort((a, b) => a[0].length - b[0].length);
-	console.log(instructions);
+	const instructions = parseInput(input);
+	const results: Map<string, number> = new Map();
+	const operations: Map<string, Omit<Instruction, 'target'>> = new Map();
+
+	for (const { type, inputs, target } of instructions) {
+		if (type === 'VALUE') {
+			results.set(target, inputs[0]);
+		} else {
+			operations.set(target, { type, inputs });
+		}
+	}
+
 	return 0;
 };
 
