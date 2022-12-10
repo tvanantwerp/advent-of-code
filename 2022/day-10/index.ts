@@ -22,11 +22,11 @@ function parseInput(input: string): Operation[] {
 	});
 }
 
-function part1(input: string): number {
-	const operations = parseInput(input).reverse();
+function getRegisters(operations: Operation[]): number[] {
+	operations.reverse();
 	let register = 1;
 	let cycle = 1;
-	let score = 0;
+	const result: number[] = [];
 	const queue: Addx[] = [];
 	while (operations.length > 0 || queue.length > 0) {
 		console.log(cycle, register, operations.length, queue.length);
@@ -39,9 +39,18 @@ function part1(input: string): number {
 				queue.push(nextOp);
 			}
 		}
-		if ((cycle - 20) % 40 === 0) {
-			score += cycle * register;
-		}
+		result.push(register);
+	}
+	return result;
+}
+
+function part1(input: string): number {
+	const registers = getRegisters(parseInput(input));
+	let cycle = 20;
+	let score = 0;
+	while (registers[cycle - 1]) {
+		score += registers[cycle - 1] * cycle;
+		cycle += 40;
 	}
 	return score;
 }
