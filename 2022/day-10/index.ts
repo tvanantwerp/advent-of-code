@@ -1,5 +1,6 @@
 const __dirname = new URL('.', import.meta.url).pathname;
-const test = await Deno.readTextFile(`${__dirname}test.txt`);
+const testA = await Deno.readTextFile(`${__dirname}testA.txt`);
+const testB = await Deno.readTextFile(`${__dirname}testB.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
 type Addx = {
@@ -29,7 +30,6 @@ function getRegisters(operations: Operation[]): number[] {
 	const result: number[] = [];
 	const queue: Addx[] = [];
 	while (operations.length > 0 || queue.length > 0) {
-		console.log(cycle, register, operations.length, queue.length);
 		cycle++;
 		if (queue.length > 0) {
 			register += queue.pop()?.value!;
@@ -55,11 +55,31 @@ function part1(input: string): number {
 	return score;
 }
 
-// function part2(input: string): number {}
+function drawPixel(register: number, cycle: number) {
+	if (cycle % 40 >= register - 1 && cycle % 40 <= register + 1) return '#';
+	return '.';
+}
 
-const test1 = part1(test);
-// const test2 = part1(test);
+function part2(input: string): string {
+	const registers = getRegisters(parseInput(input));
+	let result = '';
+	for (let cycle = 0; cycle < registers.length; cycle++) {
+		if (cycle > 0 && cycle % 40 === 0) result += '\n';
+		if (cycle === 0) {
+			result += drawPixel(registers[cycle], cycle);
+		} else {
+			if (registers[cycle] === registers[cycle - 1]) {
+				result += drawPixel(registers[cycle], cycle);
+			} else result += drawPixel(registers[cycle - 1], cycle);
+		}
+	}
+	return result;
+}
+
+const test1 = part1(testA);
+const test2 = part2(testA);
 console.assert(test1 === 13140, { expected: 13140, received: test1 });
+console.assert(test2 === testB, { expected: testB, received: test2 });
 
 console.log(`Part 1: ${part1(input)}`);
-// console.log(`Part 2: ${part1(input)}`);
+console.log(`Part 2:\n${part2(input)}`);
