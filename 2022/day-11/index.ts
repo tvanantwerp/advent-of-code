@@ -69,15 +69,37 @@ function parseInput(input: string) {
 	return monkeys;
 }
 
-function part1(input: string): number {
+function monkeyBusiness(input: string, rounds: number, relief = 1): number {
 	const monkeys = parseInput(input);
-	console.log(monkeys);
-	return 0;
+	if (monkeys.length <= 1) throw new Error(`Not enough monkeys!`);
+	const examinations: number[] = Array.from(
+		{ length: monkeys.length },
+		() => 0,
+	);
+	for (let round = 0; round < rounds; round++) {
+		for (let monkey = 0; monkey < monkeys.length; monkey++) {
+			while (monkeys[monkey].items.length) {
+				const item = monkeys[monkey].items.pop()!;
+				examinations[monkey]
+					? examinations[monkey] += 1
+					: examinations[monkey] = 1;
+				let worry = relief > 1
+					? Math.floor(monkeys[monkey].operation(item) / relief)
+					: monkeys[monkey].operation(item);
+				if (monkeys[monkey].test(worry)) {
+					monkeys[monkeys[monkey].ifTestTrue].items.push(worry);
+				} else monkeys[monkeys[monkey].ifTestFalse].items.push(worry);
+			}
+		}
+	}
+	const topTwo = examinations.sort((a, b) => b - a).slice(0, 2);
+	return topTwo[0] * topTwo[1];
 }
 
-function part2(input: string): number {
-	return 0;
-}
-
-const test1 = part1(test);
+const test1 = monkeyBusiness(test, 20, 3);
 console.assert(test1 === 10605, { expected: 10605, received: test1 });
+const test2 = monkeyBusiness(test, 10000);
+console.assert(test2 === 2713310158, { expected: 2713310158, received: test2 });
+
+console.log(`Part 1: ${monkeyBusiness(input, 20, 3)}`);
+console.log(`Part 2: ${monkeyBusiness(input, 20)}`);
