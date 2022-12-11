@@ -8,16 +8,34 @@ type Operand = '+' | '-' | '*' | '/';
 type Monkey = {
 	items: number[];
 	operation: Operation;
-	test: (item: number) => boolean;
+	test: number;
 	ifTestTrue: number;
 	ifTestFalse: number;
 };
 
-function isValidOperation(operand: Operand): operand is Operand {
-	if (
-		operand === '+' || operand === '-' || operand === '*' || operand === '/'
-	) return true;
-	return false;
+function gcdPair(m: number, n: number): number {
+	if (!n) return n === 0 ? m : NaN;
+	return gcdPair(n, m % n);
+}
+
+function lcmPair(m: number, n: number): number {
+	return m * n / gcdPair(m, n);
+}
+
+function lcm(numbers: number[]): number {
+	var n = 1;
+	for (var i = 0; i < numbers.length; ++i) {
+		n = lcmPair(numbers[i], n);
+	}
+	return n;
+}
+
+function operate(left: number, right: number, operand: Operand) {
+	if (operand === '+') return left + right;
+	if (operand === '-') return left - right;
+	if (operand === '*') return left * right;
+	if (operand === '/') return left / right;
+	throw new Error(`Invalid operand: ${operand}`);
 }
 
 function getOperation(
@@ -25,17 +43,14 @@ function getOperation(
 	right: string | number,
 	operand: Operand,
 ): Operation {
-	if (!isValidOperation(operand)) {
-		throw new Error(`Invalid operand: ${operand}`);
-	}
 	if (left === 'old' && right === 'old') {
-		return (item: number) => eval(`${item} ${operand} ${item}`);
+		return (item: number) => operate(item, item, operand);
 	}
 	if (left === 'old' && !isNaN(+right)) {
-		return (item: number) => eval(`${item} ${operand} ${right}`);
+		return (item: number) => operate(item, +right, operand);
 	}
 	if (right === 'old' && !isNaN(+left)) {
-		return (item: number) => eval(`${left} ${operand} ${item}`);
+		return (item: number) => operate(+left, item, operand);
 	}
 	throw new Error(
 		`Invalid left or right operation: ${left} ${operand} ${right}`,
@@ -56,7 +71,7 @@ function parseInput(input: string) {
 			operationText[3],
 			operationText[2] as Operand,
 		);
-		const test = (item: number) => (item % +monkey[3].match(/\d+/)![0]) === 0;
+		const test = +monkey[3].match(/\d+/)![0];
 
 		monkeys[+whichMonkey] = {
 			items,
@@ -72,28 +87,28 @@ function parseInput(input: string) {
 function monkeyBusiness(input: string, rounds: number, relief = 1): number {
 	const monkeys = parseInput(input);
 	if (monkeys.length <= 1) throw new Error(`Not enough monkeys!`);
+	const modulus = lcm(monkeys.map((monkey) => monkey.test));
 	const examinations: number[] = Array.from(
 		{ length: monkeys.length },
 		() => 0,
 	);
 	for (let round = 0; round < rounds; round++) {
-		for (let monkey = 0; monkey < monkeys.length; monkey++) {
-			while (monkeys[monkey].items.length) {
-				const item = monkeys[monkey].items.pop()!;
-				examinations[monkey]
-					? examinations[monkey] += 1
-					: examinations[monkey] = 1;
-				let worry = relief > 1
-					? Math.floor(monkeys[monkey].operation(item) / relief)
-					: monkeys[monkey].operation(item);
-				if (monkeys[monkey].test(worry)) {
-					monkeys[monkeys[monkey].ifTestTrue].items.push(worry);
-				} else monkeys[monkeys[monkey].ifTestFalse].items.push(worry);
+		monkeys.forEach((monkey, i) => {
+			while (monkey.items.length) {
+				const item = monkey.items.pop()!;
+				examinations[i] ? examinations[i] += 1 : examinations[i] = 1;
+				const worry = relief > 1
+					? Math.floor(monkey.operation(item) / relief)
+					: monkey.operation(item) % modulus;
+				if (worry % monkey.test === 0) {
+					monkeys[monkey.ifTestTrue].items.push(worry);
+				} else monkeys[monkey.ifTestFalse].items.push(worry);
 			}
-		}
+		});
 	}
+
 	const topTwo = examinations.sort((a, b) => b - a).slice(0, 2);
-	return topTwo[0] * topTwo[1];
+	return Number(topTwo[0] * topTwo[1]);
 }
 
 const test1 = monkeyBusiness(test, 20, 3);
@@ -102,4 +117,4 @@ const test2 = monkeyBusiness(test, 10000);
 console.assert(test2 === 2713310158, { expected: 2713310158, received: test2 });
 
 console.log(`Part 1: ${monkeyBusiness(input, 20, 3)}`);
-console.log(`Part 2: ${monkeyBusiness(input, 20)}`);
+console.log(`Part 2: ${monkeyBusiness(input, 10000)}`);
