@@ -13,7 +13,7 @@ function parseInput(input: string) {
 function packetsInOrder(
 	left: any[],
 	right: any[],
-): boolean {
+): boolean | undefined {
 	while (left.length && right.length) {
 		const l = left.shift(), r = right.shift();
 
