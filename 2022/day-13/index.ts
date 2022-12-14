@@ -10,85 +10,30 @@ function parseInput(input: string) {
 	return packets;
 }
 
-function isArrayOfNumbers(array: unknown[]): array is number[] {
-	for (let i = 0; i < array.length; i++) {
-		if (typeof array[i] !== 'number') return false;
-	}
-	return true;
-}
-
-function arraysInOrder(array1: number[], array2: number[]): boolean {
-	const shortestPacket = Math.min(array1.length, array2.length);
-	for (let i = 0; i < shortestPacket; i++) {
-		console.log(
-			`Comparing ${JSON.stringify(array1[i])} and ${JSON.stringify(array2[i])}`,
-		);
-
-		if (array1[i] > array2[i]) {
-			console.log(`${array1[i]} > ${array2[i]}, out of order`);
-			return false;
-		} else if (array1[i] < array2[i]) {
-			console.log(`${array1[i]}  ${array2[i]}, in order`);
-			return true;
-		}
-
-		if (i === shortestPacket - 1 && array1[i + 1] !== undefined) {
-			console.log(`Right side ran out of items, out of order`);
-			return false;
-		}
-	}
-	return true;
-}
-
 function packetsInOrder(
-	packet1: any[],
-	packet2: any[],
+	left: any[],
+	right: any[],
 ): boolean {
-	const shortestPacket = Math.min(packet1.length, packet2.length);
-	let inOrder = true;
-	console.log(
-		`Compare ${JSON.stringify(packet1)} vs ${JSON.stringify(packet2)}`,
-	);
-	for (let i = 0; i < shortestPacket; i++) {
-		console.log(
-			`Compare ${JSON.stringify(packet1[i])} vs ${JSON.stringify(packet2[i])}`,
-		);
-		if (!inOrder) break;
+	while (left.length && right.length) {
+		const l = left.shift(), r = right.shift();
 
-		if (Array.isArray(packet1[i]) && Array.isArray(packet2[i])) {
-			if (packet1[i].length > 0 && packet2[i].length === 0) {
-				inOrder = false;
-				break;
-			} else {
-				inOrder = packetsInOrder(packet1[i], packet2[i]);
-			}
-		}
-
-		if (typeof packet1[i] === 'number' && Array.isArray(packet2[i])) {
-			inOrder = packetsInOrder([packet1[i]], packet2[i]);
-		}
-		if (typeof packet2[i] === 'number' && Array.isArray(packet1[i])) {
-			inOrder = packetsInOrder(packet1[i], [packet2[i]]);
-		}
-
-		if (typeof packet1[i] === 'number' && typeof packet2[i] === 'number') {
-			if (packet1[i] < packet2[i]) break;
-			if (packet1[i] > packet2[i]) {
-				inOrder = false;
-				break;
-			}
-		}
-
-		if (
-			packet1[i + 1] !== undefined &&
-			packet2[i + 1] === undefined
-		) {
-			console.log(`Right side is smaller, packets are out of order`);
-			inOrder = false;
+		if ([l, r].every(Number.isInteger)) {
+			if (l < r) return true;
+			if (l > r) return false;
+		} else if ([l, r].every(Array.isArray)) {
+			const result = packetsInOrder(l, r);
+			if (typeof result === 'boolean') return result;
+		} else if (Number.isInteger(l) && Array.isArray(r)) {
+			const result = packetsInOrder([l], r);
+			if (typeof result === 'boolean') return result;
+		} else if (Number.isInteger(r) && Array.isArray(l)) {
+			const result = packetsInOrder(l, [r]);
+			if (typeof result === 'boolean') return result;
 		}
 	}
 
-	return inOrder;
+	if (left.length) return false;
+	if (right.length) return true;
 }
 
 function part1(input: string): number {
