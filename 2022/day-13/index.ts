@@ -38,7 +38,6 @@ function packetsInOrder(
 
 function part1(input: string): number {
 	const packets = parseInput(input);
-	console.log(packets);
 	let inOrder: number = 0;
 	packets.forEach((pair, i) => {
 		const orderedCheck = packetsInOrder(pair[0], pair[1]);
@@ -49,10 +48,24 @@ function part1(input: string): number {
 	return inOrder;
 }
 
-// const test1 = part1(test);
-// console.assert(test1 === 13, { expected: 13, received: test1 });
-// const test2 = part2(test);
-// console.assert(test2 === 29, { expected: 29, received: test2 });
+function part2(input: string): number {
+	const packets = parseInput(input).flat();
+	packets.push([[2]], [[6]]);
+
+	packets.sort((a, b) =>
+		packetsInOrder(structuredClone(a), structuredClone(b)) ? -1 : 1
+	);
+
+	const packetStrings = packets.map((p) => JSON.stringify(p));
+	const spacer1 = packetStrings.indexOf('[[2]]') + 1;
+	const spacer2 = packetStrings.indexOf('[[6]]') + 1;
+	return spacer1 * spacer2;
+}
+
+const test1 = part1(test);
+console.assert(test1 === 13, { expected: 13, received: test1 });
+const test2 = part2(test);
+console.assert(test2 === 140, { expected: 140, received: test2 });
 
 console.log(`Part 1: ${part1(input)}`);
-// console.log(`Part 2: ${part2(input)}`);
+console.log(`Part 2: ${part2(input)}`);
