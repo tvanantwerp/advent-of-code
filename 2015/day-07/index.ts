@@ -44,6 +44,59 @@ const parseInput = (input: string): Instruction[] => {
 	});
 };
 
+function findOperation(
+	operations: Map<string, Instruction>,
+	target: string,
+	results: Map<string, number>,
+): number {
+	if (isNaN(+target)) {
+		return compute(operations.get(target)!, operations, results);
+	}
+	return +target;
+}
+
+function compute(
+	{ type, inputs, target }: Instruction,
+	operations: Map<string, Instruction>,
+	results: Map<string, number>,
+): number {
+	if (results.has(target)) {
+		return results.get(target)!;
+	} else if (type === 'VALUE') {
+		results.set(target, inputs);
+		return inputs;
+	} else if (type === 'NOT') {
+		const result = ~compute(operations.get(inputs)!, operations, results) &
+			0xffff;
+		results.set(target, result);
+		return result;
+	} else if (type === 'AND') {
+		const result = findOperation(operations, inputs[0], results)! &
+			findOperation(operations, inputs[1], results)!;
+		results.set(target, result);
+		return result;
+	} else if (type === 'OR') {
+		const result = findOperation(operations, inputs[0], results)! |
+			findOperation(operations, inputs[1], results)!;
+		results.set(target, result);
+		return result;
+	} else if (type === 'LSHIFT') {
+		const result = findOperation(operations, inputs[0], results)! <<
+			findOperation(operations, inputs[1], results)!;
+		results.set(target, result);
+		return result;
+	} else if (type === 'RSHIFT') {
+		const result = findOperation(operations, inputs[0], results)! >>
+			findOperation(operations, inputs[1], results)!;
+		results.set(target, result);
+		return result;
+	} else {
+		throw new Error(
+			`Invalid instruction: ${{ target, type, inputs }}`,
+		);
+	}
+}
+
 const part1 = (input: string, wire: string) => {
 	const instructions = parseInput(input);
 	const results: Map<string, number> = new Map();
@@ -52,52 +105,7 @@ const part1 = (input: string, wire: string) => {
 		operations.set(instruction.target, instruction);
 	}
 
-	function findOperation(target: string): number {
-		if (isNaN(+target)) return compute(operations.get(target)!);
-		return +target;
-	}
-
-	function compute({ type, inputs, target }: Instruction): number {
-		// console.log(
-		// 	`Looking for ${target} with inputs ${inputs}. ${type} calculation.`,
-		// );
-		if (results.has(target)) {
-			return results.get(target)!;
-		} else if (type === 'VALUE') {
-			results.set(target, inputs);
-			return inputs;
-		} else if (type === 'NOT') {
-			const result = ~compute(operations.get(inputs)!) & 0xffff;
-			results.set(target, result);
-			return result;
-		} else if (type === 'AND') {
-			const result = findOperation(inputs[0])! &
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'OR') {
-			const result = findOperation(inputs[0])! |
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'LSHIFT') {
-			const result = findOperation(inputs[0])! <<
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'RSHIFT') {
-			const result = findOperation(inputs[0])! >>
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else {
-			throw new Error(
-				`Invalid instruction: ${{ target, type, inputs }}`,
-			);
-		}
-	}
-
-	return compute(operations.get(wire)!);
+	return compute(operations.get(wire)!, operations, results);
 };
 
 const part2 = (input: string, wire: string) => {
@@ -108,55 +116,10 @@ const part2 = (input: string, wire: string) => {
 		operations.set(instruction.target, instruction);
 	}
 
-	function findOperation(target: string): number {
-		if (isNaN(+target)) return compute(operations.get(target)!);
-		return +target;
-	}
-
-	function compute({ type, inputs, target }: Instruction): number {
-		console.log(
-			`Looking for ${target} with inputs ${inputs}. ${type} calculation.`,
-		);
-		if (results.has(target)) {
-			return results.get(target)!;
-		} else if (type === 'VALUE') {
-			results.set(target, inputs);
-			return inputs;
-		} else if (type === 'NOT') {
-			const result = ~compute(operations.get(inputs)!) & 0xffff;
-			results.set(target, result);
-			return result;
-		} else if (type === 'AND') {
-			const result = findOperation(inputs[0])! &
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'OR') {
-			const result = findOperation(inputs[0])! |
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'LSHIFT') {
-			const result = findOperation(inputs[0])! <<
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else if (type === 'RSHIFT') {
-			const result = findOperation(inputs[0])! >>
-				findOperation(inputs[1])!;
-			results.set(target, result);
-			return result;
-		} else {
-			throw new Error(
-				`Invalid instruction: ${{ target, type, inputs }}`,
-			);
-		}
-	}
-
-	const initialOutput = compute(operations.get(wire)!);
+	const initialOutput = compute(operations.get(wire)!, operations, results);
 	results.forEach((_, key) => results.delete(key));
 	operations.set('b', { target: 'b', type: 'VALUE', inputs: initialOutput });
-	return compute(operations.get(wire)!);
+	return compute(operations.get(wire)!, operations, results);
 };
 
 const test1 = part1(test, 'd');
