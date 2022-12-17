@@ -54,14 +54,18 @@ function getMergedIntervals(readings: Reading[], row: number): Coord[] {
 	return mergeIntervals(intervals);
 }
 
-function part1(input: string, row: number): number {
-	const readings = parseInput(input);
+function getRowCoverage(readings: Reading[], row: number) {
 	const relevantReadings = readings.filter(({ sensor, radius }) => {
 		if (row >= sensor[1] - radius && row <= sensor[1] + radius) return true;
 		return false;
 	});
 
-	const intervals = getMergedIntervals(relevantReadings, row);
+	return getMergedIntervals(relevantReadings, row);
+}
+
+function part1(input: string, row: number): number {
+	const readings = parseInput(input);
+	const intervals = getRowCoverage(readings, row);
 	let result = 0;
 	intervals.forEach((interval) => {
 		result += interval[1] - interval[0];
@@ -70,14 +74,23 @@ function part1(input: string, row: number): number {
 	return result;
 }
 
-function part2(input: string): number {
-	return 0;
+function part2(input: string, max: number): number {
+	const readings = parseInput(input);
+	for (let i = 0; i <= max; i++) {
+		const intervals = getRowCoverage(readings, i);
+		for (let j = 0; j < intervals.length - 1; j++) {
+			if (intervals[j][1] + 2 === intervals[j + 1][0]) {
+				return 4000000 * (intervals[j][1] + 1) + i;
+			}
+		}
+	}
+	throw new Error('No single beacon in search area not already covered');
 }
 
 const test1 = part1(test, 10);
 console.assert(test1 === 26, { expected: 26, received: test1 });
-// const test2 = part2(test);
-// console.assert(test2 === 93, { expected: 93, received: test2 });
+const test2 = part2(test, 20);
+console.assert(test2 === 56000011, { expected: 56000011, received: test2 });
 
 console.log(`Part 1: ${part1(input, 2000000)}`);
-// console.log(`Part 2: ${part2(input)}`);
+console.log(`Part 2: ${part2(input, 4000000)}`);
