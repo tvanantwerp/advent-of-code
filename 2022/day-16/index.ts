@@ -23,16 +23,16 @@ function parseInput(input: string): Valve[] {
 	return valves;
 }
 
-function part1(input: string): number {
-	const valves = parseInput(input).filter((valve) => valve.rate > 0);
+function getDistances(valves: Valve[]): number[][] {
 	// Start Floyd-Warshall with array for distances between nodes
-	const distances = Array.from({ length: valves.length }, () => {
-		return Array.from({ length: valves.length }, () => Infinity);
+	const distances = Array.from({ length: valves.length }, (_, i) => {
+		return Array.from(
+			{ length: valves.length },
+			(__, j) => i === j ? 0 : Infinity,
+		);
 	});
-	// Initialize distance from node to self to 0
-	// and from node to neighbors to 1
+	// Initialize distance from node to neighbors to 1
 	for (let i = 0; i < valves.length; i++) {
-		distances[i][i] = 0;
 		valves[i].paths.forEach((path) => {
 			const valveIndex = valves.findIndex((valve) => valve.name === path);
 			distances[i][valveIndex] = 1;
@@ -47,6 +47,15 @@ function part1(input: string): number {
 			}
 		}
 	}
+
+	return distances;
+}
+
+function part1(input: string): number {
+	const valves = parseInput(input);
+	// Start Floyd-Warshall with array for distances between nodes
+	const distances = getDistances(valves);
+
 	return 0;
 }
 
