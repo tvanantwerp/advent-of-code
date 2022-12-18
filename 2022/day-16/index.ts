@@ -2,14 +2,12 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
-type Valve = {
-	name: string;
-	rate: number;
-	paths: string[];
-};
+type Valves = Map<string, number>;
+type Tunnels = Map<string, string[]>;
+type Indices = Map<string, number>;
 
-function parseInput(input: string): Valve[] {
-	const valves = input.trim().split('\n').map((valve) => {
+function parseInput(input: string) {
+	const data = input.trim().split('\n').map((valve) => {
 		const [, name, rate] = valve.match(/Valve (\w{2}) has flow rate=(\d+)/)!;
 		const paths = valve.split(/tunnels? leads? to valves? /)[1].split(', ');
 
@@ -20,27 +18,39 @@ function parseInput(input: string): Valve[] {
 		};
 	});
 
-	return valves;
+	const valves: Valves = new Map();
+	const tunnels: Tunnels = new Map();
+	const indices: Indices = new Map();
+	data.forEach((d, i) => {
+		if (d.rate > 0 || d.name === 'AA') {
+			valves.set(d.name, d.rate);
+			tunnels.set(d.name, d.paths);
+			indices.set(d.name, i);
+		}
+	});
+
+	return { valves, tunnels, indices };
 }
 
-function getDistances(valves: Valve[]): number[][] {
+function getDistances(tunnels: Tunnels, indices: Indices): number[][] {
 	// Start Floyd-Warshall with array for distances between nodes
-	const distances = Array.from({ length: valves.length }, (_, i) => {
+	const distances = Array.from({ length: indices.size }, (_, i) => {
 		return Array.from(
-			{ length: valves.length },
+			{ length: indices.size },
 			(__, j) => i === j ? 0 : Infinity,
 		);
 	});
 	// Initialize distance from node to neighbors to 1
-	for (let i = 0; i < valves.length; i++) {
-		valves[i].paths.forEach((path) => {
-			const valveIndex = valves.findIndex((valve) => valve.name === path);
-			distances[i][valveIndex] = 1;
+	for (const [valve, neighbors] of tunnels) {
+		neighbors.forEach((neighbor) => {
+			if (indices.has(neighbor)) {
+				distances[indices.get(valve)!][indices.get(neighbor)!] = 1;
+			}
 		});
 	}
-	for (let k = 0; k < valves.length; k++) {
-		for (let i = 0; i < valves.length; i++) {
-			for (let j = 0; j < valves.length; j++) {
+	for (let k = 0; k < indices.size; k++) {
+		for (let i = 0; i < indices.size; i++) {
+			for (let j = 0; j < indices.size; j++) {
 				if (distances[i][j] > distances[i][k] + distances[k][j]) {
 					distances[i][j] = distances[i][k] + distances[k][j];
 				}
@@ -52,9 +62,11 @@ function getDistances(valves: Valve[]): number[][] {
 }
 
 function part1(input: string): number {
-	const valves = parseInput(input);
-	// Start Floyd-Warshall with array for distances between nodes
-	const distances = getDistances(valves);
+	const { valves, tunnels, indices } = parseInput(input);
+	// const distances = getDistances(valves);
+	console.log(valves, tunnels, indices);
+	const distances = getDistances(tunnels, indices);
+	console.log(distances);
 
 	return 0;
 }
