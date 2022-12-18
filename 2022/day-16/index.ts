@@ -2,18 +2,21 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
-function parseInput(input: string) {
+type Valve = {
+	name: string;
+	rate: number;
+	paths: string[];
+};
+
+function parseInput(input: string): Valve[] {
 	const valves = input.trim().split('\n').map((valve) => {
 		const [, name, rate] = valve.match(/Valve (\w{2}) has flow rate=(\d+)/)!;
-		const targets = valve.split('to valve')[1].replace(
-			/^s? /,
-			'',
-		).split(', ');
+		const paths = valve.split(/tunnels? leads? to valves? /)[1].split(', ');
 
 		return {
 			name,
-			rate,
-			targets,
+			rate: +rate,
+			paths,
 		};
 	});
 
@@ -21,8 +24,29 @@ function parseInput(input: string) {
 }
 
 function part1(input: string): number {
-	const valves = parseInput(input);
-
+	const valves = parseInput(input).filter((valve) => valve.rate > 0);
+	// Start Floyd-Warshall with array for distances between nodes
+	const distances = Array.from({ length: valves.length }, () => {
+		return Array.from({ length: valves.length }, () => Infinity);
+	});
+	// Initialize distance from node to self to 0
+	// and from node to neighbors to 1
+	for (let i = 0; i < valves.length; i++) {
+		distances[i][i] = 0;
+		valves[i].paths.forEach((path) => {
+			const valveIndex = valves.findIndex((valve) => valve.name === path);
+			distances[i][valveIndex] = 1;
+		});
+	}
+	for (let k = 0; k < valves.length; k++) {
+		for (let i = 0; i < valves.length; i++) {
+			for (let j = 0; j < valves.length; j++) {
+				if (distances[i][j] > distances[i][k] + distances[k][j]) {
+					distances[i][j] = distances[i][k] + distances[k][j];
+				}
+			}
+		}
+	}
 	return 0;
 }
 
