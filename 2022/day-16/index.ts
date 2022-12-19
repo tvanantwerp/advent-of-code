@@ -22,11 +22,12 @@ function parseInput(input: string) {
 	const tunnels: Tunnels = new Map();
 	const indices: Indices = new Map();
 	data.forEach((d, i) => {
-		if (d.rate > 0 || d.name === 'AA') {
-			valves.set(d.name, d.rate);
-			tunnels.set(d.name, d.paths);
-			indices.set(d.name, i);
-		}
+		valves.set(d.name, d.rate);
+		tunnels.set(
+			d.name,
+			d.paths,
+		);
+		indices.set(d.name, i);
 	});
 
 	return { valves, tunnels, indices };
@@ -61,14 +62,55 @@ function getDistances(tunnels: Tunnels, indices: Indices): number[][] {
 	return distances;
 }
 
+function dfs(
+	valve: string,
+	minutes: number,
+	opened: number,
+	valves: Valves,
+	tunnels: Tunnels,
+	distances: number[][],
+	indices: Indices,
+	map: Map<[string, number, number], number> = new Map(),
+): number {
+	if (map.has([valve, minutes, opened])) {
+		return map.get([valve, minutes, opened])!;
+	}
+
+	let maxRelief = 0;
+	const neighbors = tunnels.get(valve)!;
+	console.log(valve, neighbors);
+	for (const neighbor of neighbors) {
+		const isOpened = 1 << indices.get(valve)!;
+		if (opened & isOpened) continue;
+		const minutesLeft = minutes -
+			distances[indices.get(valve)!][indices.get(neighbor)!] - 1;
+		if (minutesLeft <= 0) continue;
+		maxRelief = Math.max(
+			maxRelief,
+			dfs(
+				neighbor,
+				minutesLeft,
+				opened | isOpened,
+				valves,
+				tunnels,
+				distances,
+				indices,
+				map,
+			)! + valves.get(neighbor)! * minutesLeft,
+		);
+	}
+
+	map.set([valve, minutes, opened], maxRelief);
+	return maxRelief;
+}
+
 function part1(input: string): number {
 	const { valves, tunnels, indices } = parseInput(input);
-	// const distances = getDistances(valves);
-	console.log(valves, tunnels, indices);
 	const distances = getDistances(tunnels, indices);
-	console.log(distances);
+	console.log(tunnels);
+	const maxRelief = dfs('AA', 30, 0, valves, tunnels, distances, indices);
 
-	return 0;
+	return maxRelief;
 }
 
 function part2(input: string): number {
