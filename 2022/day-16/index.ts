@@ -4,7 +4,7 @@ const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
 type Valve = {
 	rate: number;
-	mask: number;
+	mask: bigint;
 	tunnels: string[];
 };
 
@@ -28,7 +28,7 @@ function parseInput(input: string): Cave {
 
 		cave.set(name, {
 			rate: +rate,
-			mask: 1 << i,
+			mask: 1n << BigInt(i),
 			tunnels,
 		});
 	});
@@ -79,19 +79,24 @@ function getDistances(cave: Cave): Distances {
  * calculated flows are set to the result Map, which is the
  * eventual returned value. The keys of the result are the
  * bitwise value representing which valves are open, and the
- * value is the flow rate.
+ * value is the flow rate. The result represents the max flow
+ * rate possible for all possible open/shut valve states.
  */
 function visit(
 	valve: string,
 	minutes: number,
-	opened: number,
+	opened: bigint,
 	cave: Cave,
 	distances: Distances,
 	flow: number,
-	result: Map<number, number> = new Map(),
+	result: Map<bigint, number> = new Map(),
 ) {
+	// Set the result for this open/shut state to
+	// the max of the newly passed flow or the cached
+	// flow rate.
 	const cachedFlow = result.get(opened) ?? 0;
 	result.set(opened, Math.max(flow, cachedFlow));
+
 	for (const [neighbor, { rate, mask }] of cave) {
 		// Don't waste time on valves you can't open.
 		if (rate === 0) continue;
@@ -118,7 +123,7 @@ function visit(
 function part1(input: string): number {
 	const cave = parseInput(input);
 	const distances = getDistances(cave);
-	const result = visit('AA', 30, 0, cave, distances, 0);
+	const result = visit('AA', 30, 0n, cave, distances, 0);
 
 	return Math.max(...result.values());
 }
@@ -134,19 +139,22 @@ function part1(input: string): number {
 function part2(input: string): number {
 	const cave = parseInput(input);
 	const distances = getDistances(cave);
-	const result = visit('AA', 26, 0, cave, distances, 0);
+	const result = visit('AA', 26, 0n, cave, distances, 0);
 
 	let total = 0;
+
 	for (const [k1, v1] of result) {
 		for (const [k2, v2] of result) {
 			// Are k1 and k2 non-overlapping states of opened valves?
-			if ((k1 & k2) === 0) {
+			if ((k1 & k2) === 0n) {
 				// If yes, update the total if necessary
-				if (v1 + v2 > total) total = v1 + v2;
+				if (v1 + v2 > total) {
+					total = v1 + v2;
+				}
 			}
 		}
 	}
-
+	[...cave].forEach((v) => console.log(v[1].mask));
 	return total;
 }
 
@@ -155,5 +163,5 @@ console.assert(test1 === 1651, { expected: 1651, received: test1 });
 const test2 = part2(test);
 console.assert(test2 === 1707, { expected: 1707, received: test2 });
 
-// console.log(`Part 1: ${part1(input)}`);
+console.log(`Part 1: ${part1(input)}`);
 console.log(`Part 2: ${part2(input)}`);
