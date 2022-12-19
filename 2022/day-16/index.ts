@@ -2,58 +2,52 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const test = await Deno.readTextFile(`${__dirname}test.txt`);
 const input = await Deno.readTextFile(`${__dirname}input.txt`);
 
-type Valves = Map<string, number>;
-type Tunnels = Map<string, string[]>;
-type Indices = Map<string, number>;
+type Valve = {
+	rate: number;
+	mask: number;
+	tunnels: string[];
+};
 
-function parseInput(input: string) {
-	const data = input.trim().split('\n').map((valve) => {
+type Cave = Map<string, Valve>;
+
+type Distances = Map<string, number>;
+
+function parseInput(input: string): Cave {
+	const cave: Cave = new Map();
+	input.trim().split('\n').forEach((valve, i) => {
 		const [, name, rate] = valve.match(/Valve (\w{2}) has flow rate=(\d+)/)!;
-		const paths = valve.split(/tunnels? leads? to valves? /)[1].split(', ');
+		const tunnels = valve.split(/tunnels? leads? to valves? /)[1].split(', ');
 
-		return {
-			name,
+		cave.set(name, {
 			rate: +rate,
-			paths,
-		};
+			mask: 1 << i,
+			tunnels,
+		});
 	});
 
-	const valves: Valves = new Map();
-	const tunnels: Tunnels = new Map();
-	const indices: Indices = new Map();
-	data.forEach((d, i) => {
-		valves.set(d.name, d.rate);
-		tunnels.set(
-			d.name,
-			d.paths,
-		);
-		indices.set(d.name, i);
-	});
-
-	return { valves, tunnels, indices };
+	return cave;
 }
 
-function getDistances(tunnels: Tunnels, indices: Indices): number[][] {
-	// Start Floyd-Warshall with array for distances between nodes
-	const distances = Array.from({ length: indices.size }, (_, i) => {
-		return Array.from(
-			{ length: indices.size },
-			(__, j) => i === j ? 0 : Infinity,
-		);
-	});
-	// Initialize distance from node to neighbors to 1
-	for (const [valve, neighbors] of tunnels) {
-		neighbors.forEach((neighbor) => {
-			if (indices.has(neighbor)) {
-				distances[indices.get(valve)!][indices.get(neighbor)!] = 1;
+function getDistances(cave: Cave): Distances {
+	const distances: Distances = new Map();
+	for (const [key1] of cave) {
+		for (const [key2] of cave) {
+			if (cave.get(key1)!.tunnels.includes(key2)) {
+				distances.set(`${key1},${key2}`, 1);
+			} else {
+				distances.set(`${key1},${key2}`, Infinity);
 			}
-		});
+		}
 	}
-	for (let k = 0; k < indices.size; k++) {
-		for (let i = 0; i < indices.size; i++) {
-			for (let j = 0; j < indices.size; j++) {
-				if (distances[i][j] > distances[i][k] + distances[k][j]) {
-					distances[i][j] = distances[i][k] + distances[k][j];
+
+	for (const [k] of cave) {
+		for (const [i] of cave) {
+			for (const [j] of cave) {
+				const currentDistance = distances.get(`${i},${j}`)!;
+				const comparableDistance = distances.get(`${i},${k}`)! +
+					distances.get(`${k},${j}`)!;
+				if (currentDistance > comparableDistance) {
+					distances.set(`${i},${j}`, comparableDistance);
 				}
 			}
 		}
@@ -62,55 +56,41 @@ function getDistances(tunnels: Tunnels, indices: Indices): number[][] {
 	return distances;
 }
 
-function dfs(
+function visit(
 	valve: string,
 	minutes: number,
 	opened: number,
-	valves: Valves,
-	tunnels: Tunnels,
-	distances: number[][],
-	indices: Indices,
-	map: Map<[string, number, number], number> = new Map(),
-): number {
-	if (map.has([valve, minutes, opened])) {
-		return map.get([valve, minutes, opened])!;
-	}
-
-	let maxRelief = 0;
-	const neighbors = tunnels.get(valve)!;
-	console.log(valve, neighbors);
-	for (const neighbor of neighbors) {
-		const isOpened = 1 << indices.get(valve)!;
-		if (opened & isOpened) continue;
-		const minutesLeft = minutes -
-			distances[indices.get(valve)!][indices.get(neighbor)!] - 1;
-		if (minutesLeft <= 0) continue;
-		maxRelief = Math.max(
-			maxRelief,
-			dfs(
-				neighbor,
-				minutesLeft,
-				opened | isOpened,
-				valves,
-				tunnels,
-				distances,
-				indices,
-				map,
-			)! + valves.get(neighbor)! * minutesLeft,
+	cave: Cave,
+	distances: Distances,
+	flow: number,
+	result: Map<number, number> = new Map(),
+) {
+	const n = !result.has(opened) ? 0 : result.get(opened)!;
+	result.set(opened, Math.max(flow, n));
+	for (const [neighbor, { rate, mask }] of cave) {
+		if (rate === 0) continue;
+		const distance = distances.get(`${valve},${neighbor}`)!;
+		const timeRemaining = minutes - distance - 1;
+		if ((opened & mask) > 0 || timeRemaining < 0) continue;
+		visit(
+			neighbor,
+			timeRemaining,
+			opened | mask,
+			cave,
+			distances,
+			flow + (timeRemaining * rate),
+			result,
 		);
 	}
 
-	map.set([valve, minutes, opened], maxRelief);
-	return maxRelief;
+	return result;
 }
-
 function part1(input: string): number {
-	const { valves, tunnels, indices } = parseInput(input);
-	const distances = getDistances(tunnels, indices);
-	console.log(tunnels);
-	const maxRelief = dfs('AA', 30, 0, valves, tunnels, distances, indices);
+	const cave = parseInput(input);
+	const distances = getDistances(cave);
+	const result = visit('AA', 30, 0, cave, distances, 0);
 
-	return maxRelief;
+	return Math.max(...result.values());
 }
 
 function part2(input: string): number {
@@ -122,5 +102,5 @@ console.assert(test1 === 1651, { expected: 1651, received: test1 });
 // const test2 = part2(test);
 // console.assert(test2 === 93, { expected: 93, received: test2 });
 
-// console.log(`Part 1: ${part1(input)}`);
+console.log(`Part 1: ${part1(input)}`);
 // console.log(`Part 2: ${part2(input)}`);
