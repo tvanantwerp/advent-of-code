@@ -154,7 +154,7 @@ function part2(input: string): number {
 			}
 		}
 	}
-	[...cave].forEach((v) => console.log(v[1].mask));
+
 	return total;
 }
 
