@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "2023"
+version = "0.1.0"
+description = ""
+authors = ["Tom VanAntwerp <tom@tomvanantwerp.com>"]
+packages = [
+	{ include = "common" },
+	{ include = "day??" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.scripts]
+day01 = "day01.main:main"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+pyright = "^1.1.338"
+pylint = "^3.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
