@@ -1,5 +1,6 @@
 from os import path
 import argparse
+import re
 from common.reader import read_input
 
 current_dir = path.dirname(__file__)
@@ -23,14 +24,11 @@ numbers: list[str] = [
 def part_one(inputs: list[str]):
     values: list[int] = []
     for line in inputs:
-        digits = ""
-        for character in line:
-            if str.isdigit(character):
-                digits += character
+        digits = "".join(char for char in line if char.isdigit())
         if len(digits) == 1:
             digits += digits
         if len(digits) > 2:
-            digits = digits[:1] + digits[-1:]
+            digits = digits[0] + digits[-1]
         values.append(int(digits))
     return sum(values)
 
@@ -38,14 +36,12 @@ def part_one(inputs: list[str]):
 def part_two(inputs: list[str]):
     parsed_inputs: list[str] = []
     for line in inputs:
-        start = 0
-        while start < len(line):
-            for number in numbers:
-                if line[start:].startswith(number):
-                    line = line.replace(number, str(numbers.index(number) + 1), 1)
-                    start = -1
-                    break
-            start += 1
+        number_matrix: list[list[int]] = []
+        for number in numbers:
+            number_matrix.append([match.start() for match in re.finditer(number, line)])
+        for digit, positions in enumerate(number_matrix, start=1):
+            for position in positions:
+                line = line[:position] + str(digit) + line[position + 1 :]
         parsed_inputs.append(line)
 
     return part_one(parsed_inputs)
