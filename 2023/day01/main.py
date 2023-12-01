@@ -3,17 +3,26 @@ import argparse
 from common.reader import read_input
 
 current_dir = path.dirname(__file__)
-test_path = path.join(current_dir, 'test.txt')
+test1_path = path.join(current_dir, 'test1.txt')
+test2_path = path.join(current_dir, 'test2.txt')
 file_path = path.join(current_dir, 'input.txt')
-puzzle_test_input = read_input(test_path)
-puzzle_input = read_input(file_path)
 
-def part_one(isTest: bool):
-    inputs = puzzle_test_input if isTest else puzzle_input
-    print(inputs)
+def part_one(inputs: list[str]):
+    values: list[int] = []
+    for line in inputs:
+        digits = ''
+        for character in line:
+            if str.isdigit(character):
+                digits += character
+        if len(digits) == 1:
+            digits += digits
+        if len(digits) > 2:
+            digits = digits[:1] + digits[-1:]
+        values.append(int(digits))
+    return sum(values)
 
 
-def part_two(isTest: bool):
+def part_two(inputs: list[str]):
     pass
 
 def main():
@@ -22,8 +31,20 @@ def main():
     args = parser.parse_args()
     test_mode = "test" if args.test else "full"
     print(f'Running day one with {test_mode} inputs...')
-    print(part_one(args.test))
-    print(part_two(args.test))
+
+    if (args.test):
+        puzzle_test1_input = read_input(test1_path)
+        puzzle_test2_input = read_input(test2_path)
+        print(part_one(puzzle_test1_input))
+        print(part_two(puzzle_test2_input))
+    else:
+        puzzle_input = read_input(file_path)
+        print(part_one(puzzle_input))
+        print(part_two(puzzle_input))
+
+
+
+
 
 if __name__ == '__main__':
     main()
