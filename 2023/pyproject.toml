@@ -5,7 +5,8 @@ description = ""
 authors = ["Tom VanAntwerp <tom@tomvanantwerp.com>"]
 packages = [
 	{ include = "common" },
-	{ include = "day??" },
+	{ include = "day01" },
+	{ include = "day02" },
 ]
 
 [tool.poetry.dependencies]
@@ -13,6 +14,7 @@ python = "^3.11"
 
 [tool.poetry.scripts]
 day01 = "day01.main:main"
+day02 = "day02.main:main"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
