@@ -43,7 +43,23 @@ def part_one(inputs: list[str]):
 
 
 def part_two(inputs: list[str]):
-    pass
+    cards = [parse_card(card) for card in inputs]
+    match_counts = [0] * len(cards)
+    card_counts = [1] * len(cards)
+    for card in cards:
+        matches = count_matches(card)
+        match_counts[card[0] - 1] = matches
+    for index, match in enumerate(match_counts):
+        if match == 0:
+            continue
+
+        current_card_count = card_counts[index]
+
+        while current_card_count > 0:
+            for i in range(index + 1, index + match + 1):
+                card_counts[i] += 1
+            current_card_count -= 1
+    return sum(card_counts)
 
 
 def main():
