@@ -55,10 +55,8 @@ def part_two(inputs: list[str]):
 
         current_card_count = card_counts[index]
 
-        while current_card_count > 0:
-            for i in range(index + 1, index + match + 1):
-                card_counts[i] += 1
-            current_card_count -= 1
+        for i in range(index + 1, index + match + 1):
+            card_counts[i] += current_card_count
     return sum(card_counts)
 
 
