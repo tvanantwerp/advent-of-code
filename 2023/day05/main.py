@@ -8,8 +8,29 @@ test_path = path.join(current_dir, "test.txt")
 file_path = path.join(current_dir, "input.txt")
 
 
+def get_mappings(inputs: list[str]):
+    seed_line = inputs.pop(0)
+    seeds: list[int] = [int(x) for x in re.findall(r"\d+", seed_line)]
+    inputs.pop(0)
+    mappings: list[list[list[int]]] = []
+    current_mapping: list[list[int]] = []
+    for line in inputs:
+        if line == "":
+            mappings.append(current_mapping)
+            current_mapping = []
+            continue
+        mapping_values = re.findall(r"\d+", line)
+        if len(mapping_values) == 0:
+            continue
+        current_mapping.append([int(x) for x in mapping_values])
+    if len(current_mapping):
+        mappings.append(current_mapping)
+    return seeds, mappings
+
+
 def part_one(inputs: list[str]):
-    pass
+    seeds, mappings = get_mappings(inputs)
+    print(seeds, mappings)
 
 
 def part_two(inputs: list[str]):
