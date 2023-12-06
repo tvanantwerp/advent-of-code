@@ -65,7 +65,7 @@ def main():
     parser.add_argument("--test", action="store_true", help="Run on test input")
     args = parser.parse_args()
     test_mode = "test" if args.test else "full"
-    print(f"Running day two with {test_mode} inputs...")
+    print(f"Running day four with {test_mode} inputs...")
 
     if args.test:
         puzzle_test_input = read_input(test_path)
