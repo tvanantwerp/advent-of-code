@@ -52,6 +52,65 @@ def get_closest_location(seeds: list[int], mappings: list[list[tuple[int, int, i
     return closest_location
 
 
+def get_overlapping_mapped_range(
+    ranges: list[tuple[int, int]], mapping: tuple[int, int, int]
+):
+    covered = []
+    not_covered = []
+    for seed_range in ranges:
+        seed_min = seed_range[0]
+        seed_max = seed_range[0] + seed_range[1] - 1
+        mapping_min = mapping[1]
+        mapping_max = mapping[1] + mapping[2] - 1
+        if seed_min >= mapping_min and seed_max <= mapping_max:
+            covered.append((mapping[0] + (seed_min - mapping_min), seed_range[1]))
+        if seed_max < mapping_min or seed_min > mapping_max:
+            not_covered.append(seed_range)
+        elif seed_min < mapping_min and seed_max > mapping_max:
+            covered.append((mapping[0] + (seed_min - mapping_min), mapping[2]))
+            not_covered.append((seed_min, mapping_min - seed_min))
+            not_covered.append((mapping_max + 1, seed_max - mapping_max))
+        elif seed_min < mapping_min and seed_max <= mapping_max:
+            covered.append((mapping[0], seed_max - mapping_min + 1))
+            not_covered.append((seed_min, mapping_min - seed_min))
+        elif seed_min >= mapping_min and seed_max > mapping_max:
+            covered.append(
+                (mapping[0] + (seed_min - mapping_min), mapping_max - seed_min)
+            )
+            not_covered.append((mapping_max + 1, seed_max - mapping_max))
+
+    return [covered, not_covered]
+
+
+def get_closest_from_ranges(
+    seed_pairs: list[tuple[int, int]], mappings: list[list[tuple[int, int, int]]]
+) -> int:
+    final_ranges_set = set()
+    for pair in seed_pairs:
+        check_pairs = {pair}
+        for section in mappings:
+            not_covered = check_pairs
+            new_covered = set()
+            for mapping in section:
+                if len(not_covered) == 0:
+                    break
+                # print(f"Checking {not_covered} against {mapping}")
+                c, n = get_overlapping_mapped_range(list(not_covered), mapping)
+                # print(f"Covered: {c}")
+                # print(f"Not Covered: {n}")
+                new_covered.update(c)
+                not_covered = set(n)
+            check_pairs = new_covered
+            check_pairs.update(not_covered)
+            # print(f"Next loop: {check_pairs}")
+            # print("-----")
+        final_ranges_set.update(check_pairs)
+    final_ranges = list(final_ranges_set)
+    final_ranges.sort()
+    # print(final_ranges)
+    return final_ranges[0][0]
+
+
 def part_one(inputs: list[str]):
     seeds, mappings = get_mappings(inputs)
     closest_location = get_closest_location(seeds, mappings)
@@ -63,7 +122,8 @@ def part_two(inputs: list[str]):
     seed_pairs = []
     for i in range(0, len(seeds), 2):
         seed_pairs.append((seeds[i], seeds[i + 1]))
-    pass
+    closest_location = get_closest_from_ranges(seed_pairs, mappings)
+    return closest_location
 
 
 def main():
