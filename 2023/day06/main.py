@@ -16,20 +16,32 @@ def parse_races(inputs: list[str]):
     return list(zip(times, distances))
 
 
-def binary_search(time_range: tuple[int, int], target: int, time: int, increasing=True):
+def binary_search(time_range: tuple[int, int], target: int, time: int):
     low, high = time_range
     if low > high:
         return low
     mid = (low + high) // 2
     value_at_time = mid * time - mid**2
-    print(low, mid, high, value_at_time, target)
-    print("----")
+    value_at_time_next = (mid + 1) * time - (mid + 1) ** 2
+    increasing = value_at_time_next > value_at_time
     if value_at_time == target:
+        return mid + 1 if increasing else mid - 1
+    if increasing and value_at_time < target < value_at_time_next:
+        return mid + 1
+    if not increasing and value_at_time_next < target < value_at_time:
         return mid
     if value_at_time > target:
-        return binary_search((low, mid - 1), target, time)
+        return (
+            binary_search((low, mid - 1), target, time)
+            if increasing
+            else binary_search((mid + 1, high), target, time)
+        )
     if value_at_time < target:
-        return binary_search((mid + 1, high), target, time)
+        return (
+            binary_search((mid + 1, high), target, time)
+            if increasing
+            else binary_search((low, mid - 1), target, time)
+        )
 
 
 def part_one(inputs: list[str]):
@@ -38,8 +50,7 @@ def part_one(inputs: list[str]):
     for race in races:
         time, record_distance = race
         lower_bound = binary_search((0, time // 2), record_distance, time)
-        upper_bound = binary_search((time // 2 + 1, time), record_distance, time, False)
-        print(lower_bound, upper_bound)
+        upper_bound = binary_search((time // 2 + 1, time), record_distance, time)
         margin *= upper_bound - lower_bound + 1
     return margin
 
