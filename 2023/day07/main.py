@@ -23,21 +23,7 @@ ranks = {
     "five_of_a_kind": 6,
 }
 
-card_values = {
-    "A": 14,
-    "K": 13,
-    "Q": 12,
-    "J": 11,
-    "T": 10,
-    "9": 9,
-    "8": 8,
-    "7": 7,
-    "6": 6,
-    "5": 5,
-    "4": 4,
-    "3": 3,
-    "2": 2,
-}
+card_values = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
 
 
 def rank_hand(hand: str):
@@ -63,13 +49,29 @@ def rank_hand(hand: str):
         return ranks["five_of_a_kind"]
 
 
-def sort_hands(hand1: tuple[str, int], hand2: tuple[str, int]):
+def sort_hands(hand1: tuple[str, int], hand2: tuple[str, int], wildcards=False):
     rank1 = rank_hand(hand1[0])
     rank2 = rank_hand(hand2[0])
+    if wildcards:
+        for c in card_values:
+            new_rank1 = rank_hand(hand1[0].replace("J", c))
+            new_rank2 = rank_hand(hand2[0].replace("J", c))
+            if new_rank1 > rank1:
+                rank1 = new_rank1
+            if new_rank2 > rank2:
+                rank2 = new_rank2
     if rank1 == rank2:
         for i in range(0, 5):
-            card1 = card_values[hand1[0][i]]
-            card2 = card_values[hand2[0][i]]
+            card1 = (
+                -1
+                if wildcards and hand1[0][i] == "J"
+                else card_values.index(hand1[0][i])
+            )
+            card2 = (
+                -1
+                if wildcards and hand2[0][i] == "J"
+                else card_values.index(hand2[0][i])
+            )
             if card1 < card2:
                 return -1
             if card1 > card2:
@@ -81,9 +83,17 @@ def sort_hands(hand1: tuple[str, int], hand2: tuple[str, int]):
         return 1
 
 
+def sort_hands_with_wildcards(hand1: tuple[str, int], hand2: tuple[str, int]):
+    return sort_hands(hand1, hand2, wildcards=True)
+
+
+def sort_hands_without_wildcards(hand1: tuple[str, int], hand2: tuple[str, int]):
+    return sort_hands(hand1, hand2, wildcards=False)
+
+
 def part_one(inputs: list[str]):
     hands = parse_hands(inputs)
-    hands.sort(key=cmp_to_key(sort_hands))
+    hands.sort(key=cmp_to_key(sort_hands_without_wildcards))
     winnings = 0
     for rank, hand in enumerate(hands, start=1):
         winnings += rank * int(hand[1])
@@ -91,7 +101,12 @@ def part_one(inputs: list[str]):
 
 
 def part_two(inputs: list[str]):
-    pass
+    hands = parse_hands(inputs)
+    hands.sort(key=cmp_to_key(sort_hands_with_wildcards))
+    winnings = 0
+    for rank, hand in enumerate(hands, start=1):
+        winnings += rank * int(hand[1])
+    return winnings
 
 
 def main():
