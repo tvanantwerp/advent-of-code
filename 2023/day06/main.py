@@ -56,7 +56,18 @@ def part_one(inputs: list[str]):
 
 
 def part_two(inputs: list[str]):
-    pass
+    races = parse_races(inputs)
+    time_string = ""
+    distance_string = ""
+    for race in races:
+        t, d = race
+        time_string += f"{t}"
+        distance_string += f"{d}"
+    time = int(time_string)
+    distance = int(distance_string)
+    lower_bound = binary_search((0, time // 2), distance, time)
+    upper_bound = binary_search((time // 2 + 1, time), distance, time)
+    return upper_bound - lower_bound + 1
 
 
 def main():
