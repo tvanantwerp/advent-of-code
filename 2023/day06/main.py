@@ -2,6 +2,7 @@ from os import path
 import argparse
 import re
 from common.reader import read_input
+from math import sqrt, ceil, floor
 
 current_dir = path.dirname(__file__)
 test_path = path.join(current_dir, "test.txt")
@@ -16,42 +17,22 @@ def parse_races(inputs: list[str]):
     return list(zip(times, distances))
 
 
-def binary_search(time_range: tuple[int, int], target: int, time: int):
-    low, high = time_range
-    if low > high:
-        return low
-    mid = (low + high) // 2
-    value_at_time = mid * time - mid**2
-    value_at_time_next = (mid + 1) * time - (mid + 1) ** 2
-    increasing = value_at_time_next > value_at_time
-    if value_at_time == target:
-        return mid + 1 if increasing else mid - 1
-    if increasing and value_at_time < target < value_at_time_next:
-        return mid + 1
-    if not increasing and value_at_time_next < target < value_at_time:
-        return mid
-    if value_at_time > target:
-        return (
-            binary_search((low, mid - 1), target, time)
-            if increasing
-            else binary_search((mid + 1, high), target, time)
-        )
-    if value_at_time < target:
-        return (
-            binary_search((mid + 1, high), target, time)
-            if increasing
-            else binary_search((low, mid - 1), target, time)
-        )
+def quadratic_formula(time: int, distance: int):
+    a = -1
+    b = time
+    c = -1 * distance
+    discriminant = sqrt(b**2 - 4 * a * c)
+    left_answer = floor((-b + discriminant) / (2 * a)) + 1
+    right_answer = ceil((-b - discriminant) / (2 * a)) - 1
+    return left_answer, right_answer
 
 
 def part_one(inputs: list[str]):
     races = parse_races(inputs)
     margin = 1
     for race in races:
-        time, record_distance = race
-        lower_bound = binary_search((0, time // 2), record_distance, time)
-        upper_bound = binary_search((time // 2 + 1, time), record_distance, time)
-        margin *= upper_bound - lower_bound + 1
+        l, r = quadratic_formula(race[0], race[1])
+        margin *= r - l + 1
     return margin
 
 
@@ -65,9 +46,8 @@ def part_two(inputs: list[str]):
         distance_string += f"{d}"
     time = int(time_string)
     distance = int(distance_string)
-    lower_bound = binary_search((0, time // 2), distance, time)
-    upper_bound = binary_search((time // 2 + 1, time), distance, time)
-    return upper_bound - lower_bound + 1
+    l, r = quadratic_formula(time, distance)
+    return r - l + 1
 
 
 def main():
