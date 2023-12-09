@@ -8,8 +8,25 @@ test_path = path.join(current_dir, "test.txt")
 file_path = path.join(current_dir, "input.txt")
 
 
+def parse_inputs(inputs: list[str]):
+    parsed_inputs = []
+    for line in inputs:
+        parsed_inputs.append([int(x) for x in re.findall(r"\d+", line)])
+    return parsed_inputs
+
+
+def recursive_result(readings: list[int]):
+    if all(n == 0 for n in readings):
+        return 0
+
+    differences = [b - a for a, b in zip(readings, readings[1:])]
+
+    return recursive_result(differences) + readings[-1]
+
+
 def part_one(inputs: list[str]):
-    pass
+    parsed_inputs = parse_inputs(inputs)
+    return sum(recursive_result(x) for x in parsed_inputs)
 
 
 def part_two(inputs: list[str]):
