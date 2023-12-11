@@ -5,6 +5,9 @@ from common.reader import read_input
 current_dir = path.dirname(__file__)
 test1_path = path.join(current_dir, "test1.txt")
 test2_path = path.join(current_dir, "test2.txt")
+test3_path = path.join(current_dir, "test3.txt")
+test4_path = path.join(current_dir, "test4.txt")
+test5_path = path.join(current_dir, "test5.txt")
 file_path = path.join(current_dir, "input.txt")
 
 directions: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {
@@ -41,7 +44,7 @@ def build_loop(grid: list[list[str]]):
             break
 
     queue = [start]
-    visited = set()
+    visited: set[tuple[int, int]] = set()
     while queue:
         y, x = queue.pop(0)
         visited.add((y, x))
@@ -76,15 +79,18 @@ def build_loop(grid: list[list[str]]):
                     if pipe not in visited:
                         queue.append(pipe)
 
-    return len(visited) // 2
+    return visited
 
 
 def part_one(inputs: list[str]):
     parsed_inputs = parse_inputs(inputs)
-    return build_loop(parsed_inputs)
+    visited = build_loop(parsed_inputs)
+    return len(visited) // 2
 
 
 def part_two(inputs: list[str]):
+    parsed_inputs = parse_inputs(inputs)
+    loop = build_loop(parsed_inputs)
     pass
 
 
@@ -98,8 +104,14 @@ def main():
     if args.test:
         puzzle_test1_input = read_input(test1_path)
         puzzle_test2_input = read_input(test2_path)
+        puzzle_test3_input = read_input(test3_path)
+        puzzle_test4_input = read_input(test4_path)
+        puzzle_test5_input = read_input(test5_path)
         print(part_one(puzzle_test1_input))
         print(part_one(puzzle_test2_input))
+        print(part_two(puzzle_test3_input))
+        print(part_two(puzzle_test4_input))
+        print(part_two(puzzle_test5_input))
     else:
         puzzle_input = read_input(file_path)
         print(part_one(puzzle_input))
