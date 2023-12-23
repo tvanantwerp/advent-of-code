@@ -15,6 +15,7 @@ packages = [
 	{ include = "day08" },
 	{ include = "day09" },
 	{ include = "day10" },
+	{ include = "day11" },
 ]
 
 [tool.poetry.dependencies]
@@ -31,6 +32,7 @@ day07 = "day07.main:main"
 day08 = "day08.main:main"
 day09 = "day09.main:main"
 day10 = "day10.main:main"
+day11 = "day11.main:main"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"
