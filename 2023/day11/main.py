@@ -12,6 +12,9 @@ def parse_inputs(inputs: list[str]) -> list[list[str]]:
 
 
 def grid_to_string(grid: list[list[str]]) -> str:
+    """
+    This is to debug drawing the grids correctly.
+    """
     output = ""
     for row in grid:
         output += "".join(row) + "\n"
@@ -39,15 +42,32 @@ def expand_universe(grid: list[list[str]]) -> list[list[str]]:
         for row in grid:
             if col_pos:
                 row.insert(index + cols_added, ".")
-                cols_added += 1
+        if col_pos:
+            cols_added += 1
 
     return grid
+
+
+def get_galaxy_coordinates(grid: list[list[str]]) -> list[tuple[int, int]]:
+    galaxies: list[tuple[int, int]] = []
+    for y, row in enumerate(grid):
+        for x, col in enumerate(row):
+            if col == "#":
+                galaxies.append((y, x))
+    return galaxies
 
 
 def part_one(inputs: list[str]):
     original_grid = parse_inputs(inputs)
     expanded_universe = expand_universe(original_grid)
-    pass
+    galaxies = get_galaxy_coordinates(expanded_universe)
+    sum_of_distances = 0
+    for g, galaxy1 in enumerate(galaxies):
+        for g2 in range(g + 1, len(galaxies)):
+            galaxy2 = galaxies[g2]
+            distance = abs(galaxy1[0] - galaxy2[0]) + abs(galaxy1[1] - galaxy2[1])
+            sum_of_distances += distance
+    return sum_of_distances
 
 
 def part_two(inputs: list[str]):
