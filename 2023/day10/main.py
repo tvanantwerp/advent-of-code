@@ -1,6 +1,7 @@
 from os import path
 import argparse
 from common.reader import read_input
+from typing import Optional
 
 current_dir = path.dirname(__file__)
 test1_path = path.join(current_dir, "test1.txt")
@@ -115,7 +116,7 @@ def part_two(inputs: list[str]):
     inside: set[tuple[int, int]] = set()
     for y in range(0, yMax):
         completed_edges = 0
-        last_bend: str = None
+        last_bend: Optional[str] = None
         for x in range(0, xMax):
             if (y, x) in loop and grid[y][x] == "|":
                 completed_edges += 1
