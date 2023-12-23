@@ -21,31 +21,19 @@ def grid_to_string(grid: list[list[str]]) -> str:
     return output
 
 
-def expand_universe(grid: list[list[str]]) -> list[list[str]]:
+def empty_cols_and_rows(grid: list[list[str]]) -> tuple[list[bool], list[bool]]:
     cols = [True] * len(grid[0])
-    rows: list[int] = []
+    rows = [True] * len(grid)
 
     for row_index, row in enumerate(grid):
-        is_empty = True
+        is_row_empty = True
         for col_index, col in enumerate(row):
             if col == "#":
                 cols[col_index] = False
-                is_empty = False
-        if is_empty:
-            rows.append(row_index)
+                is_row_empty = False
+        rows[row_index] = is_row_empty
 
-    for index, row_pos in enumerate(rows):
-        grid.insert(row_pos + index, ["."] * len(grid[0]))
-
-    cols_added = 0
-    for index, col_pos in enumerate(cols):
-        for row in grid:
-            if col_pos:
-                row.insert(index + cols_added, ".")
-        if col_pos:
-            cols_added += 1
-
-    return grid
+    return (cols, rows)
 
 
 def get_galaxy_coordinates(grid: list[list[str]]) -> list[tuple[int, int]]:
@@ -57,21 +45,36 @@ def get_galaxy_coordinates(grid: list[list[str]]) -> list[tuple[int, int]]:
     return galaxies
 
 
-def part_one(inputs: list[str]):
+def calculate_distances(inputs: list[str], distance_multiplier: int):
     original_grid = parse_inputs(inputs)
-    expanded_universe = expand_universe(original_grid)
-    galaxies = get_galaxy_coordinates(expanded_universe)
+    cols, rows = empty_cols_and_rows(original_grid)
+    galaxies = get_galaxy_coordinates(original_grid)
     sum_of_distances = 0
-    for g, galaxy1 in enumerate(galaxies):
-        for g2 in range(g + 1, len(galaxies)):
+    for g1, galaxy1 in enumerate(galaxies):
+        for g2 in range(g1 + 1, len(galaxies)):
             galaxy2 = galaxies[g2]
-            distance = abs(galaxy1[0] - galaxy2[0]) + abs(galaxy1[1] - galaxy2[1])
+            c_start = min(galaxy1[1], galaxy2[1])
+            c_end = max(galaxy1[1], galaxy2[1])
+            r_start = min(galaxy1[0], galaxy2[0])
+            r_end = max(galaxy1[0], galaxy2[0])
+            empty_cols = cols[c_start:c_end].count(True)
+            empty_rows = rows[r_start:r_end].count(True)
+            distance = (
+                abs(galaxy1[0] - galaxy2[0])
+                + abs(galaxy1[1] - galaxy2[1])
+                + empty_cols * (distance_multiplier - 1)
+                + empty_rows * (distance_multiplier - 1)
+            )
             sum_of_distances += distance
     return sum_of_distances
 
 
+def part_one(inputs: list[str]):
+    return calculate_distances(inputs, 2)
+
+
 def part_two(inputs: list[str]):
-    pass
+    return calculate_distances(inputs, 1000000)
 
 
 def main():
