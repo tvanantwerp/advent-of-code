@@ -32,7 +32,7 @@ def is_valid_cell(grid: list[list[str]], cell: tuple[int, int]):
     return 0 <= cell[0] < len(grid) and 0 <= cell[1] < len(grid[0])
 
 
-def build_loop(grid: list[list[str]]):
+def find_start(grid: list[list[str]]):
     # Find the starting point
     start: tuple[int, int] = (-1, -1)
     for y, row in enumerate(grid):
@@ -42,6 +42,11 @@ def build_loop(grid: list[list[str]]):
                 break
         if start != (-1, -1):
             break
+    return start
+
+
+def build_loop(grid: list[list[str]]):
+    start = find_start(grid)
 
     queue = [start]
     visited: set[tuple[int, int]] = set()
@@ -50,6 +55,7 @@ def build_loop(grid: list[list[str]]):
         visited.add((y, x))
         if grid[y][x] == "S":
             start_directions: list[tuple[int, int]] = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+            actual_directions: list[tuple[int, int]] = []
             for direction in start_directions:
                 neighbor_pipe_coords: tuple[int, int] = get_neighbor((y, x), direction)
                 if is_valid_cell(grid, neighbor_pipe_coords):
@@ -66,6 +72,19 @@ def build_loop(grid: list[list[str]]):
                                 break
                         if connects_to_start:
                             queue.append(neighbor_pipe_coords)
+                            actual_directions.append(direction)
+            if (-1, 0) in actual_directions and (1, 0) in actual_directions:
+                grid[y][x] = "|"
+            elif (0, -1) in actual_directions and (0, 1) in actual_directions:
+                grid[y][x] = "-"
+            elif (-1, 0) in actual_directions and (0, 1) in actual_directions:
+                grid[y][x] = "L"
+            elif (-1, 0) in actual_directions and (0, -1) in actual_directions:
+                grid[y][x] = "J"
+            elif (0, -1) in actual_directions and (1, 0) in actual_directions:
+                grid[y][x] = "7"
+            elif (0, 1) in actual_directions and (1, 0) in actual_directions:
+                grid[y][x] = "F"
         else:
             pipe_type = grid[y][x]
             if pipe_type in directions:
@@ -83,15 +102,34 @@ def build_loop(grid: list[list[str]]):
 
 
 def part_one(inputs: list[str]):
-    parsed_inputs = parse_inputs(inputs)
-    visited = build_loop(parsed_inputs)
-    return len(visited) // 2
+    grid = parse_inputs(inputs)
+    loop = build_loop(grid)
+    return len(loop) // 2
 
 
 def part_two(inputs: list[str]):
-    parsed_inputs = parse_inputs(inputs)
-    loop = build_loop(parsed_inputs)
-    pass
+    grid = parse_inputs(inputs)
+    loop = build_loop(grid)
+    yMax = len(grid)
+    xMax = len(grid[0])
+    inside: set[tuple[int, int]] = set()
+    for y in range(0, yMax):
+        completed_edges = 0
+        last_bend: str = None
+        for x in range(0, xMax):
+            if (y, x) in loop and grid[y][x] == "|":
+                completed_edges += 1
+            if (y, x) in loop and grid[y][x] in ["L", "F"]:
+                last_bend = grid[y][x]
+            if (y, x) in loop and grid[y][x] in ["7", "J"]:
+                if last_bend == "L" and grid[y][x] == "7":
+                    completed_edges += 1
+                elif last_bend == "F" and grid[y][x] == "J":
+                    completed_edges += 1
+                last_bend = None
+            if (y, x) not in loop and completed_edges % 2 == 1:
+                inside.add((y, x))
+    return len(inside)
 
 
 def main():
