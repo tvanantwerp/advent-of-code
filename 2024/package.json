@@ -1,10 +1,11 @@
 {
-  "name": "advent-of-code",
-  "version": "1.0.0",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "devDependencies": {
+	"name": "advent-of-code",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"devDependencies": {
 		"@eslint/js": "^9.5.0",
 		"@types/eslint__js": "^8.42.3",
 		"@types/node": "^22.7.7",
