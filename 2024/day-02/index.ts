@@ -25,11 +25,11 @@ function checkRecordSafety(
 		if (
 			i !== 0 &&
 			((lastDifference > 0 && nextDifference < 0) ||
-				(lastDifference < 0 && nextDifference > 0) ||
-				nextDifference === 0)
+				(lastDifference < 0 && nextDifference > 0))
 		) {
 			recordIsSafe = false;
 		}
+		if (nextDifference === 0) recordIsSafe = false;
 		lastDifference = nextDifference;
 
 		// Check if the next difference is in the inclusive range 1 to 3
@@ -38,13 +38,21 @@ function checkRecordSafety(
 			recordIsSafe = false;
 		}
 
+		// Brute force check if removing any single level will
+		// make the whole record safe
 		if (forgiveness && !secondPass && !recordIsSafe) {
-			recordIsSafe = checkRecordSafety(record.toSpliced(i, 1), true, true);
+			for (let j = 0; j < record.length; j++) {
+				const testRemoval = checkRecordSafety(
+					record.toSpliced(j, 1),
+					true,
+					true,
+				);
+				if (testRemoval) return true;
+			}
 		}
 
 		if (!recordIsSafe) break;
 	}
-
 	return recordIsSafe;
 }
 
