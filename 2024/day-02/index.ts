@@ -17,35 +17,35 @@ function checkRecordSafety(
 	secondPass?: boolean,
 ): boolean {
 	let recordIsSafe = true;
-	let firstUnsafeIndex: number | undefined;
 	let lastDifference = 0;
 	for (let i = 0; i < record.length - 1; i++) {
 		const nextDifference = record[i] - record[i + 1];
-		// Must be monotonic sequence
+
+		// Check if record is a monotonic sequence
 		if (
 			i !== 0 &&
-			((lastDifference > 0 && record[i] - record[i + 1] < 0) ||
-				(lastDifference < 0 && record[i] - record[i + 1] > 0))
+			((lastDifference > 0 && nextDifference < 0) ||
+				(lastDifference < 0 && nextDifference > 0) ||
+				nextDifference === 0)
 		) {
 			recordIsSafe = false;
-			firstUnsafeIndex = i;
-			break;
 		}
 		lastDifference = nextDifference;
 
+		// Check if the next difference is in the inclusive range 1 to 3
 		const nextDifferenceAbs = Math.abs(nextDifference);
 		if (nextDifferenceAbs < 1 || nextDifferenceAbs > 3) {
 			recordIsSafe = false;
-			firstUnsafeIndex = i;
-			break;
 		}
+
+		if (forgiveness && !secondPass && !recordIsSafe) {
+			recordIsSafe = checkRecordSafety(record.toSpliced(i, 1), true, true);
+		}
+
+		if (!recordIsSafe) break;
 	}
 
-	if (forgiveness && firstUnsafeIndex !== undefined && !secondPass) {
-		return checkRecordSafety(record.toSpliced(firstUnsafeIndex, 1), true, true);
-	} else {
-		return recordIsSafe;
-	}
+	return recordIsSafe;
 }
 
 let safe1 = 0;
