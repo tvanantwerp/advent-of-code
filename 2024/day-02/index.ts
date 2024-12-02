@@ -17,20 +17,20 @@ for (const record of records) {
 	let recordIsSafe = true;
 	let lastDifference = 0;
 	for (let i = 0; i < record.length - 1; i++) {
+		const nextDifference = record[i] - record[i + 1];
 		// Must be monotonic sequence
-		if (i !== 0) {
-			if (
-				(lastDifference > 0 && record[i] - record[i + 1] < 0) ||
-				(lastDifference < 0 && record[i] - record[i + 1] > 0)
-			) {
-				recordIsSafe = false;
-				break;
-			}
+		if (
+			i !== 0 &&
+			((lastDifference > 0 && record[i] - record[i + 1] < 0) ||
+				(lastDifference < 0 && record[i] - record[i + 1] > 0))
+		) {
+			recordIsSafe = false;
+			break;
 		}
-		lastDifference = record[i] - record[i + 1];
+		lastDifference = nextDifference;
 
-		const nextDifference = Math.abs(lastDifference);
-		if (nextDifference < 1 || nextDifference > 3) {
+		const nextDifferenceAbs = Math.abs(nextDifference);
+		if (nextDifferenceAbs < 1 || nextDifferenceAbs > 3) {
 			recordIsSafe = false;
 			break;
 		}
