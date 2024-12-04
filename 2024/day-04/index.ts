@@ -12,52 +12,49 @@ const grid = rawInput.split('\n').map(line => line.split(''));
 const xMax = grid[0].length;
 const yMax = grid.length;
 
+const validMs = new Set<string>();
+const validAs = new Set<string>();
+const validSs = new Set<string>();
+
+let validXmases = 0;
 for (let y = 0; y < yMax; y++) {
-	for (let x = 0; x < xMax; x++) {}
+	for (let x = 0; x < xMax; x++) {
+		if (grid[y][x] == 'X') {
+			const neighbors = getNeighborCoordinates(
+				[x, y],
+				new Set<[number, number]>([[x, y]]),
+			);
+		}
+	}
 }
 
 function getNeighborCoordinates(
 	coordinates: [number, number],
+	visited: Set<[number, number]>,
 ): [number, number][] {
-	const neighbors: [number, number][] = [];
 	const x = coordinates[0];
 	const y = coordinates[1];
-	const upExists = y - 1 >= 0;
-	const downExists = y + 1 <= yMax;
-	const leftExists = x - 1 >= 0;
-	const rightExists = y + 1 <= xMax;
-	// up and left
-	if (upExists && leftExists) {
-		neighbors.push([x - 1, y - 1]);
-	}
-	// up
-	if (upExists) {
-		neighbors.push([x, y - 1]);
-	}
-	// up and right
-	if (upExists && rightExists) {
-		neighbors.push([x + 1, y - 1]);
-	}
-	// left
-	if (leftExists) {
-		neighbors.push([x - 1, y]);
-	}
-	// right
-	if (rightExists) {
-		neighbors.push([x - 1, y - 1]);
-	}
-	// down and left
-	if (downExists && leftExists) {
-		neighbors.push([x - 1, y + 1]);
-	}
-	// down
-	if (downExists) {
-		neighbors.push([x, y + 1]);
-	}
-	// down and right
-	if (downExists && rightExists) {
-		neighbors.push([x + 1, y + 1]);
-	}
+	const up = y - 1;
+	const down = y + 1;
+	const left = x - 1;
+	const right = x + 1;
 
-	return neighbors;
+	const naiveNeighbors: [number, number][] = [
+		[left, up],
+		[x, up],
+		[right, up],
+		[left, y],
+		[right, y],
+		[left, down],
+		[x, down],
+		[right, down],
+	];
+
+	const validNeighbors = naiveNeighbors.filter(n => {
+		return (
+			n[0] >= 0 && n[0] <= xMax && n[1] >= 0 && n[1] <= yMax && !visited.has(n)
+		);
+	});
+
+	return validNeighbors;
 }
