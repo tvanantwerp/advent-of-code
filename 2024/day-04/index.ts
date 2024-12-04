@@ -24,23 +24,30 @@ const verifiedGrid: string[][] = Array.from({ length: yMax }, () =>
 	Array.from({ length: xMax }, () => '#'),
 );
 
-function populateVerifiedGrid([x, y]: [number, number], letter: Xmas): boolean {
+const validXmases: Set<string> = new Set();
+
+function populateVerifiedGrid(
+	[x, y]: [number, number],
+	letter: Xmas,
+	previous?: [number, number],
+): boolean {
 	if (letter === 'X') {
 		verifiedGrid[y][x] = letter;
+		validXmases.add(`${x},${y}`);
 		return true;
-	} else if (previousLetter[letter] !== undefined) {
-		const neighbors = getNeighborCoordinates([x, y], previousLetter[letter]);
-		neighbors.forEach(neighbor => {
-			if (verifiedGrid[neighbor[1]][neighbor[0]] === previousLetter[letter]) {
+	}
+	const nextInSequence = previousLetter[letter];
+	if (nextInSequence !== undefined) {
+		const neighbors = getNeighborCoordinates([x, y], nextInSequence, previous);
+		for (let n = 0; n < neighbors.length; n++) {
+			const validSequence = populateVerifiedGrid(neighbors[n], nextInSequence, [
+				x,
+				y,
+			]);
+			if (validSequence) {
 				verifiedGrid[y][x] = letter;
-			} else {
-				const validSequence = populateVerifiedGrid(
-					neighbor,
-					previousLetter[letter],
-				);
-				if (validSequence) verifiedGrid[y][x] = letter;
 			}
-		});
+		}
 	}
 	return false;
 }
@@ -48,9 +55,20 @@ function populateVerifiedGrid([x, y]: [number, number], letter: Xmas): boolean {
 function getNeighborCoordinates(
 	coordinates: [number, number],
 	neighborLetter: Xmas,
+	previous?: [number, number],
 ): [number, number][] {
-	const x = coordinates[0];
-	const y = coordinates[1];
+	const [x, y] = coordinates;
+
+	if (previous) {
+		const [dx, dy] = [x - previous[0], y - previous[1]];
+		const next: [number, number] = [x + dx, y + dy];
+		if (isValidNeighbor(next, neighborLetter)) {
+			return [next];
+		} else {
+			return [];
+		}
+	}
+
 	const up = y - 1;
 	const down = y + 1;
 	const left = x - 1;
@@ -67,24 +85,24 @@ function getNeighborCoordinates(
 		[right, down],
 	];
 
-	const validNeighbors = naiveNeighbors.filter(([x, y]) => {
-		return (
-			x >= 0 && x < xMax && y >= 0 && y < yMax && grid[y][x] === neighborLetter
-		);
-	});
+	const validNeighbors = naiveNeighbors.filter(n =>
+		isValidNeighbor(n, neighborLetter),
+	);
 
 	return validNeighbors;
 }
 
-let validXmases = 0;
+function isValidNeighbor([x, y]: [number, number], letter: Xmas): boolean {
+	return x >= 0 && x < xMax && y >= 0 && y < yMax && grid[y][x] === letter;
+}
+
 for (let y = 0; y < yMax; y++) {
 	for (let x = 0; x < xMax; x++) {
-		const validXmas = populateVerifiedGrid([x, y], grid[y][x] as Xmas);
-		if (validXmas) validXmases++;
+		populateVerifiedGrid([x, y], grid[y][x] as Xmas);
 	}
 }
 
 console.log(verifiedGrid.map(row => row.join()).join('\n'));
 
 console.log('Part 1 answer:');
-console.log(validXmases);
+console.log(validXmases.size);
