@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const rawInput = readFileSync(join(__dirname, 'test.txt'), 'utf-8');
-// const rawInput = readFileSync(join(__dirname, 'input.txt'), 'utf-8');
+// const rawInput = readFileSync(join(__dirname, 'test.txt'), 'utf-8');
+const rawInput = readFileSync(join(__dirname, 'input.txt'), 'utf-8');
 const grid = rawInput.split('\n').map(line => line.split(''));
 
 const xMax = grid[0].length;
@@ -24,32 +24,42 @@ const verifiedGrid: string[][] = Array.from({ length: yMax }, () =>
 	Array.from({ length: xMax }, () => '#'),
 );
 
-const validXmases: Set<string> = new Set();
+let validXmases = 0;
 
 function populateVerifiedGrid(
-	[x, y]: [number, number],
+	coordinates: [number, number],
 	letter: Xmas,
 	previous?: [number, number],
 ): boolean {
+	const [x, y] = coordinates;
 	if (letter === 'X') {
 		verifiedGrid[y][x] = letter;
-		validXmases.add(`${x},${y}`);
+		validXmases++;
 		return true;
 	}
+
+	let validSequence = false;
 	const nextInSequence = previousLetter[letter];
 	if (nextInSequence !== undefined) {
-		const neighbors = getNeighborCoordinates([x, y], nextInSequence, previous);
+		const neighbors = getNeighborCoordinates(
+			coordinates,
+			nextInSequence,
+			previous,
+		);
+
 		for (let n = 0; n < neighbors.length; n++) {
-			const validSequence = populateVerifiedGrid(neighbors[n], nextInSequence, [
-				x,
-				y,
-			]);
-			if (validSequence) {
+			const partOfSequence = populateVerifiedGrid(
+				neighbors[n],
+				nextInSequence,
+				coordinates,
+			);
+			if (partOfSequence) {
 				verifiedGrid[y][x] = letter;
+				validSequence = true;
 			}
 		}
 	}
-	return false;
+	return validSequence;
 }
 
 function getNeighborCoordinates(
@@ -98,11 +108,11 @@ function isValidNeighbor([x, y]: [number, number], letter: Xmas): boolean {
 
 for (let y = 0; y < yMax; y++) {
 	for (let x = 0; x < xMax; x++) {
-		populateVerifiedGrid([x, y], grid[y][x] as Xmas);
+		if (grid[y][x] === 'S') populateVerifiedGrid([x, y], grid[y][x] as Xmas);
 	}
 }
 
-console.log(verifiedGrid.map(row => row.join()).join('\n'));
+// console.log(verifiedGrid.map(row => row.join()).join('\n'));
 
 console.log('Part 1 answer:');
-console.log(validXmases.size);
+console.log(validXmases);
