@@ -35,14 +35,19 @@ for (let i = 0; i < allPages.length; i++) {
 let part1 = 0;
 for (let i = 0; i < updatSections.length; i++) {
 	const section = updatSections[i];
-	let validUpdate = true;
+	let validUpdate = false;
 	for (let j = 0; j < section.length; j++) {
 		const page = section[j];
 		const pagesAfter = section.slice(j + 1);
 		for (let k = 0; k < pagesAfter.length; k++) {
-			const pagesAfterSet = afterMap.get(pagesAfter[k]);
-			if (pagesAfterSet?.has(page)) validUpdate = false;
+			if (k === pagesAfter.length - 1) {
+				validUpdate = true;
+			} else {
+				const pagesAfterSet = afterMap.get(pagesAfter[k]);
+				if (pagesAfterSet?.has(page)) break;
+			}
 		}
+		if (!validUpdate) break;
 	}
 	if (validUpdate) {
 		const median = section[Math.floor(section.length / 2)];
@@ -52,5 +57,5 @@ for (let i = 0; i < updatSections.length; i++) {
 
 console.log('Part 1 answer:');
 console.log(part1);
-console.log('Part 2 answer:');
+// console.log('Part 2 answer:');
 // console.log(part2);
