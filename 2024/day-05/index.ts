@@ -15,6 +15,9 @@ const updatSections = inputSections[1]
 	.split('\n')
 	.map(r => r.split(',').map(p => +p));
 
+// Here we populate a map with a key of each page that should come
+// before another page, and then a set of the pages that should
+// come after. This simplifies look-up.
 const afterMap: Map<number, Set<number>> = new Map();
 for (let i = 0; i < printOrderPairs.length; i++) {
 	const afterSet = afterMap.get(printOrderPairs[i][0]);
@@ -34,9 +37,17 @@ updates: for (let i = 0; i < updatSections.length; i++) {
 	section: for (let j = 0; j < section.length; j++) {
 		const page = section[j];
 		const pagesAfter = section.slice(j + 1);
+		// If we've gotten to the last page in the section without
+		// breaking due to invalid sorting, then we know this
+		// section is valid. Update validUpdate and break;
 		if (j === section.length - 1) {
 			validUpdate = true;
+			break;
 		}
+		// Check each page that comes after the current page,
+		// and make sure that the current page isn't in their
+		// set of pages that should come after. Break early
+		// from outer loop if sort proves invalid.
 		pages: for (let k = 0; k < pagesAfter.length; k++) {
 			const pagesAfterSet = afterMap.get(pagesAfter[k]);
 			if (pagesAfterSet?.has(page)) {
@@ -44,10 +55,15 @@ updates: for (let i = 0; i < updatSections.length; i++) {
 			}
 		}
 	}
+	// If a section had a valid sort, update the part 1 answer
+	// by adding the value of the middle page.
 	if (validUpdate) {
 		const median = section[Math.floor(section.length / 2)];
 		part1 += median;
 	} else {
+		// If a section was invalid, sort it correctly and then
+		// update the part 2 answer by adding the middle page
+		// of the sorted section instead.
 		section.sort((a, b) => {
 			const afterA = afterMap.get(a);
 			const afterB = afterMap.get(b);
