@@ -33,21 +33,28 @@ for (let i = 0; i < allPages.length; i++) {
 }
 
 let part1 = 0;
-for (let i = 0; i < updatSections.length; i++) {
+updates: for (let i = 0; i < updatSections.length; i++) {
 	const section = updatSections[i];
 	let validUpdate = false;
-	for (let j = 0; j < section.length; j++) {
+	console.log('Section:', section);
+	section: for (let j = 0; j < section.length; j++) {
 		const page = section[j];
 		const pagesAfter = section.slice(j + 1);
-		for (let k = 0; k < pagesAfter.length; k++) {
-			if (k === pagesAfter.length - 1) {
-				validUpdate = true;
-			} else {
-				const pagesAfterSet = afterMap.get(pagesAfter[k]);
-				if (pagesAfterSet?.has(page)) break;
+		console.log('Page:', page);
+		console.log('Pages after:', pagesAfter);
+		if (j === section.length - 1) {
+			validUpdate = true;
+			console.log('Update proved valid');
+		}
+		pages: for (let k = 0; k < pagesAfter.length; k++) {
+			const pagesAfterSet = afterMap.get(pagesAfter[k]);
+			if (pagesAfterSet?.has(page)) {
+				console.log(
+					`Update is invalid! ${page} should come after ${pagesAfter[k]}`,
+				);
+				break section;
 			}
 		}
-		if (!validUpdate) break;
 	}
 	if (validUpdate) {
 		const median = section[Math.floor(section.length / 2)];
