@@ -15,43 +15,32 @@ const updatSections = inputSections[1]
 	.split('\n')
 	.map(r => r.split(',').map(p => +p));
 
-const allPages: number[] = Array.from(new Set(printOrderPairs.flatMap(p => p)));
-allPages.sort((a, b) => {
-	const rulesForAAndB = printOrderPairs.filter(p => p[0] === a && p[1] === b);
-	const rulesForBAndA = printOrderPairs.filter(p => p[0] === b && p[1] === a);
-	if (rulesForAAndB[0] !== undefined) {
-		return -1;
-	} else if (rulesForBAndA[0] !== undefined) {
-		return 1;
-	}
-	return 0;
-});
-
 const afterMap: Map<number, Set<number>> = new Map();
-for (let i = 0; i < allPages.length; i++) {
-	afterMap.set(allPages[i], new Set(allPages.slice(i + 1)));
+for (let i = 0; i < printOrderPairs.length; i++) {
+	const afterSet = afterMap.get(printOrderPairs[i][0]);
+	if (!afterSet) {
+		afterMap.set(printOrderPairs[i][0], new Set([printOrderPairs[i][1]]));
+	} else {
+		afterSet.add(printOrderPairs[i][1]);
+		afterMap.set(printOrderPairs[i][0], afterSet);
+	}
 }
+
+console.log(afterMap.get(18));
 
 let part1 = 0;
 updates: for (let i = 0; i < updatSections.length; i++) {
 	const section = updatSections[i];
 	let validUpdate = false;
-	console.log('Section:', section);
 	section: for (let j = 0; j < section.length; j++) {
 		const page = section[j];
 		const pagesAfter = section.slice(j + 1);
-		console.log('Page:', page);
-		console.log('Pages after:', pagesAfter);
 		if (j === section.length - 1) {
 			validUpdate = true;
-			console.log('Update proved valid');
 		}
 		pages: for (let k = 0; k < pagesAfter.length; k++) {
 			const pagesAfterSet = afterMap.get(pagesAfter[k]);
 			if (pagesAfterSet?.has(page)) {
-				console.log(
-					`Update is invalid! ${page} should come after ${pagesAfter[k]}`,
-				);
 				break section;
 			}
 		}
