@@ -26,9 +26,8 @@ for (let i = 0; i < printOrderPairs.length; i++) {
 	}
 }
 
-console.log(afterMap.get(18));
-
 let part1 = 0;
+let part2 = 0;
 updates: for (let i = 0; i < updatSections.length; i++) {
 	const section = updatSections[i];
 	let validUpdate = false;
@@ -48,10 +47,20 @@ updates: for (let i = 0; i < updatSections.length; i++) {
 	if (validUpdate) {
 		const median = section[Math.floor(section.length / 2)];
 		part1 += median;
+	} else {
+		section.sort((a, b) => {
+			const afterA = afterMap.get(a);
+			const afterB = afterMap.get(b);
+			if (afterA && afterA.has(b)) return -1;
+			if (afterB && afterB.has(a)) return 1;
+			return 0;
+		});
+		const median = section[Math.floor(section.length / 2)];
+		part2 += median;
 	}
 }
 
 console.log('Part 1 answer:');
 console.log(part1);
-// console.log('Part 2 answer:');
-// console.log(part2);
+console.log('Part 2 answer:');
+console.log(part2);
