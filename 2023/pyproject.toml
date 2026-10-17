@@ -1,27 +1,11 @@
-[tool.poetry]
+[project]
 name = "2023"
 version = "0.1.0"
 description = ""
-authors = ["Tom VanAntwerp <tom@tomvanantwerp.com>"]
-packages = [
-	{ include = "common" },
-	{ include = "day01" },
-	{ include = "day02" },
-	{ include = "day03" },
-	{ include = "day04" },
-	{ include = "day05" },
-	{ include = "day06" },
-	{ include = "day07" },
-	{ include = "day08" },
-	{ include = "day09" },
-	{ include = "day10" },
-	{ include = "day11" },
-]
+authors = [{ name = "Tom VanAntwerp", email = "tom@tomvanantwerp.com" }]
+requires-python = ">=3.11,<4"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-
-[tool.poetry.scripts]
+[project.scripts]
 day01 = "day01.main:main"
 day02 = "day02.main:main"
 day03 = "day03.main:main"
@@ -34,11 +18,33 @@ day09 = "day09.main:main"
 day10 = "day10.main:main"
 day11 = "day11.main:main"
 
-[tool.poetry.group.dev.dependencies]
-black = "^23.11.0"
-pyright = "^1.1.338"
-pylint = "^3.0.2"
+[dependency-groups]
+dev = [
+    "black>=23.11.0,<24",
+    "pyright>=1.1.338,<2",
+    "pylint>=3.0.2,<4",
+]
+
+[tool.uv]
+default-groups = "all"
+
+[tool.uv.build-backend]
+module-name = [
+    "common",
+    "day01",
+    "day02",
+    "day03",
+    "day04",
+    "day05",
+    "day06",
+    "day07",
+    "day08",
+    "day09",
+    "day10",
+    "day11",
+]
+module-root = ""
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
